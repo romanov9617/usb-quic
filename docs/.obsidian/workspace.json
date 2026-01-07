@@ -1,0 +1,216 @@
+{
+  "main": {
+    "id": "64665197492d13aa",
+    "type": "split",
+    "children": [
+      {
+        "id": "e88a9f100ae3f2e0",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "8e39d06a3dc29fae",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "experiments/E001-no-encryption/artifacts.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "artifacts"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "df0e276ce2008eb0",
+    "type": "split",
+    "children": [
+      {
+        "id": "c6bb14a21e251e2e",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "75a527591da381d0",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "2bc428ca0d2fef3b",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "19197d28aa4debae",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "668b99775ab20354",
+    "type": "split",
+    "children": [
+      {
+        "id": "f12176a2b53afb7b",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "3a5fc7b8d4898615",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "experiments/E001-no-encryption/artifacts.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for artifacts"
+            }
+          },
+          {
+            "id": "9296208ceaa598f9",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "experiments/E001-no-encryption/artifacts.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from artifacts"
+            }
+          },
+          {
+            "id": "730d9a203cb16a4e",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "58a2979b5269f9fe",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "24e3f28dc1dd284d",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "experiments/E001-no-encryption/artifacts.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of artifacts"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false,
+      "obsidian-excalidraw-plugin:New drawing": false
+    }
+  },
+  "active": "8e39d06a3dc29fae",
+  "lastOpenFiles": [
+    "_assets/logs/E001-tcpdump.log~",
+    "_assets/logs/E001-tcpdump.log",
+    "_assets/pcap/E001-usbip-no-encryption-30k.pcap",
+    "_assets/pcap/E001-usbip-no-encryption-30k_00005_20260107170746.pcap",
+    "_assets/pcap/E001-usbip-no-encryption-30k_00004_20260107170743.pcap",
+    "_assets/pcap/E001-usbip-no-encryption-30k_00003_20260107170739.pcap",
+    "_assets/pcap/E001-usbip-no-encryption-30k_00002_20260107170736.pcap",
+    "_assets/pcap/E001-usbip-no-encryption-30k_00001_20260107170732.pcap",
+    "_assets/pcap/E001-usbip-no-encryption-30k_00000_20260107170713.pcap",
+    "_assets/pcap/E001-usbip-no-encryption-50k.pcap",
+    "_assets/pcap/usbip-no-encryption-50k.pcap",
+    "_assets/img/E001-wireshark-usb-mass-storage.png",
+    "_assets/img/E001-wireshark-usbip-usb-urb.png",
+    "experiments/E001-no-encryption/artifacts.md",
+    "experiments/E001-no-encryption/index.md",
+    "experiments/E001-no-encryption/appendix.md",
+    "experiments/E001-no-encryption/results.md",
+    "experiments/E001-no-encryption/steps.md",
+    "experiments/index.md",
+    "Untitled.md",
+    "_templates/experiment.appendix.md",
+    "_templates/experiment.artifacts.md",
+    "_templates/experiment.results.md",
+    "_templates/experiment.steps.md",
+    "_templates/experiment.index.md",
+    "index.md"
+  ]
+}
