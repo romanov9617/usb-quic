@@ -52,7 +52,7 @@ func main() {
 
 // run prepares TLS and QUIC listener configuration and starts serving.
 func run(ctx context.Context, logger *slog.Logger) error {
-	addr := "0.0.0.0:4242"
+	addr := "0.0.0.0:443"
 
 	tlsConf, err := buildTLSConfig(logger)
 	if err != nil {
