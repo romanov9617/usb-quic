@@ -1,0 +1,12 @@
+[global]
+ioengine=libaio
+direct=1
+time_based=1
+group_reporting=1
+randrepeat=0
+norandommap=1
+
+[seq_read]
+rw=read
+bs=1m
+

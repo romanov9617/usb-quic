@@ -1,0 +1,1 @@
+Applying netem on enp0s3: delay=200ms jitter=0ms loss=0% limit=1000

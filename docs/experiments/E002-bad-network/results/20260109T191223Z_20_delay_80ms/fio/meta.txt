@@ -1,0 +1,3 @@
+testfile=/mnt/usb/fio_testfile.bin
+size=256m runtime=15 iodepth=1 numjobs=1 timeout=120
+jobs=fio/seq_write.fio fio/seq_read.fio fio/rand_read_4k.fio fio/rand_write_4k.fio
