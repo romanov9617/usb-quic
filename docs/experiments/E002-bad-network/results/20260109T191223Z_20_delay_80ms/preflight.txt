@@ -1,0 +1,48 @@
+### date_utc
+Fri Jan  9 07:12:24 PM UTC 2026
+### uname
+Linux client 6.14.0-37-generic #37~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Thu Nov 20 10:25:38 UTC 2 x86_64 x86_64 x86_64 GNU/Linux
+### iface
+enp0s3
+### usbip_target
+192.168.1.149:3240
+### mountpoint_check
+OK
+### mount_line
+/dev/sdc1 on /mnt/usb type vfat (rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro)
+### lsblk
+NAME   MAJ:MIN RM   SIZE RO TYPE MOUNTPOINTS
+loop0    7:0    0     4K  1 loop /snap/bare/5
+loop1    7:1    0  73.9M  1 loop /snap/core22/2045
+loop2    7:2    0    74M  1 loop /snap/core22/2193
+loop3    7:3    0 245.1M  1 loop /snap/firefox/6565
+loop4    7:4    0 250.8M  1 loop /snap/firefox/7559
+loop5    7:5    0  18.5M  1 loop /snap/firmware-updater/210
+loop6    7:6    0   516M  1 loop /snap/gnome-42-2204/202
+loop7    7:7    0  11.1M  1 loop /snap/firmware-updater/167
+loop8    7:8    0 516.2M  1 loop /snap/gnome-42-2204/226
+loop9    7:9    0  91.7M  1 loop /snap/gtk-common-themes/1535
+loop10   7:10   0  10.8M  1 loop /snap/snap-store/1270
+loop12   7:12   0   576K  1 loop /snap/snapd-desktop-integration/315
+loop13   7:13   0  50.9M  1 loop /snap/snapd/25577
+loop14   7:14   0  48.1M  1 loop /snap/snapd/25935
+sda      8:0    0    10G  0 disk 
+├─sda1   8:1    0     1M  0 part 
+└─sda2   8:2    0    10G  0 part /
+sdc      8:32   1  29.3G  0 disk 
+└─sdc1   8:33   1  29.3G  0 part /mnt/usb
+sr0     11:0    1  1024M  0 rom  
+### lsusb
+Bus 001 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 001 Device 002: ID 80ee:0021 VirtualBox USB Tablet
+Bus 002 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 003 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 003 Device 004: ID 058f:6387 Alcor Micro Corp. Flash Drive
+Bus 004 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+### fio_version
+/usr/bin/fio
+fio-3.36
+### sudo_check
+sudo_no_password_OK
+### write_test_sudo
+OK

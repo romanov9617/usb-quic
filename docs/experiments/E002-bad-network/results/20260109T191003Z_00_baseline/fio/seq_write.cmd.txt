@@ -1,0 +1,1 @@
+cmd: sudo fio fio/seq_write.fio --filename=/mnt/usb/fio_testfile.bin --size=256m --runtime=15 --iodepth=1 --numjobs=1

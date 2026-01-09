@@ -1,0 +1,1 @@
+cmd: sudo fio fio/rand_write_4k.fio --filename=/mnt/usb/fio_testfile.bin --size=256m --runtime=15 --iodepth=1 --numjobs=1
