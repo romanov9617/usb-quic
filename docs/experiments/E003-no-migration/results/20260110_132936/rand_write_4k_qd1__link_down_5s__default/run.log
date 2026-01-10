@@ -1,0 +1,10 @@
+[2026-01-10T13:29:36+00:00] run_one: case=rand_write_4k_qd1__link_down_5s__default
+[2026-01-10T13:29:36+00:00] preflight: start
+[2026-01-10T13:29:36+00:00] preflight: umount /mnt/usb
+[2026-01-10T13:29:37+00:00] preflight: mount /dev/sdb1 -> /mnt/usb
+[2026-01-10T13:29:37+00:00] preflight: write-test
+[2026-01-10T13:29:42+00:00] preflight: ok
+[2026-01-10T13:29:42+00:00] fio: starting (see fio.cmd)
+[2026-01-10T13:30:12+00:00] inject: link down enp0s3
+[2026-01-10T13:30:17+00:00] revert: link up enp0s3
+[2026-01-10T13:31:45+00:00] run_one: done out=/home/danila/E003-no-migration/results/20260110_132936/rand_write_4k_qd1__link_down_5s__default
