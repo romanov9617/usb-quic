@@ -1,0 +1,17 @@
+{
+  "run_id": "20260114_213032",
+  "case_id": "rand_write_4k_qd1__route_blackhole_30s__default",
+  "profiles": {
+    "load": "profiles/loads/rand_write_4k_qd1.env",
+    "injection": "profiles/injections/route_blackhole_30s.env",
+    "tcp": "profiles/tcp/default.env"
+  },
+  "params": {
+    "runtime_sec": 120,
+    "inject_at_sec": 30,
+    "inj_len_sec": 30
+  },
+  "result": {
+    "fio_wait_rc": 0
+  }
+}
