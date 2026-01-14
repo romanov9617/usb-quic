@@ -1,0 +1,744 @@
+2026-01-14T21:30:38+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:30:38+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:30:38+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:30:38+00:00       22657207   23037      0       0       0     202 
+2026-01-14T21:30:38+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:30:38+00:00        3430668   11553      0       3       0       0 
+2026-01-14T21:30:39+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:30:39+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:30:39+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:30:39+00:00       22766761   23419      0       0       0     202 
+2026-01-14T21:30:39+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:30:39+00:00        3482377   11937      0       3       0       0 
+2026-01-14T21:30:40+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:30:40+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:30:40+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:30:40+00:00       22766761   23419      0       0       0     202 
+2026-01-14T21:30:40+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:30:40+00:00        3482377   11937      0       3       0       0 
+2026-01-14T21:30:41+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:30:41+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:30:41+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:30:41+00:00       22766761   23419      0       0       0     202 
+2026-01-14T21:30:41+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:30:41+00:00        3482377   11937      0       3       0       0 
+2026-01-14T21:30:42+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:30:42+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:30:42+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:30:42+00:00       22766761   23419      0       0       0     202 
+2026-01-14T21:30:42+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:30:42+00:00        3482377   11937      0       3       0       0 
+2026-01-14T21:30:43+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:30:43+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:30:43+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:30:43+00:00       22767555   23427      0       0       0     202 
+2026-01-14T21:30:43+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:30:43+00:00        3487237   11944      0       3       0       0 
+2026-01-14T21:30:44+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:30:44+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:30:44+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:30:44+00:00       22767555   23427      0       0       0     202 
+2026-01-14T21:30:44+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:30:44+00:00        3487237   11944      0       3       0       0 
+2026-01-14T21:30:45+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:30:45+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:30:45+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:30:45+00:00       22767555   23427      0       0       0     202 
+2026-01-14T21:30:45+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:30:45+00:00        3487237   11944      0       3       0       0 
+2026-01-14T21:30:46+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:30:46+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:30:46+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:30:46+00:00       22767555   23427      0       0       0     202 
+2026-01-14T21:30:46+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:30:46+00:00        3487237   11944      0       3       0       0 
+2026-01-14T21:30:47+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:30:47+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:30:47+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:30:47+00:00       22768349   23435      0       0       0     202 
+2026-01-14T21:30:47+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:30:47+00:00        3492097   11951      0       3       0       0 
+2026-01-14T21:30:48+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:30:48+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:30:48+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:30:48+00:00       22768349   23435      0       0       0     202 
+2026-01-14T21:30:48+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:30:48+00:00        3492097   11951      0       3       0       0 
+2026-01-14T21:30:49+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:30:49+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:30:49+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:30:49+00:00       22768529   23438      0       0       0     202 
+2026-01-14T21:30:49+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:30:49+00:00        3492097   11951      0       3       0       0 
+2026-01-14T21:30:50+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:30:50+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:30:50+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:30:50+00:00       22768529   23438      0       0       0     205 
+2026-01-14T21:30:50+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:30:50+00:00        3492097   11951      0       3       0       0 
+2026-01-14T21:30:51+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:30:51+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:30:51+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:30:51+00:00       22769323   23446      0       0       0     205 
+2026-01-14T21:30:51+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:30:51+00:00        3496957   11958      0       3       0       0 
+2026-01-14T21:30:52+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:30:52+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:30:52+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:30:52+00:00       22769323   23446      0       0       0     205 
+2026-01-14T21:30:52+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:30:52+00:00        3496957   11958      0       3       0       0 
+2026-01-14T21:30:53+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:30:53+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:30:53+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:30:53+00:00       22769323   23446      0       0       0     205 
+2026-01-14T21:30:53+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:30:53+00:00        3496957   11958      0       3       0       0 
+2026-01-14T21:30:54+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:30:54+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:30:54+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:30:54+00:00       22769323   23446      0       0       0     205 
+2026-01-14T21:30:54+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:30:54+00:00        3496957   11958      0       3       0       0 
+2026-01-14T21:30:55+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:30:55+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:30:55+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:30:55+00:00       22770117   23454      0       0       0     205 
+2026-01-14T21:30:55+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:30:55+00:00        3501817   11965      0       3       0       0 
+2026-01-14T21:30:56+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:30:56+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:30:56+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:30:56+00:00       22770117   23454      0       0       0     205 
+2026-01-14T21:30:56+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:30:56+00:00        3501817   11965      0       3       0       0 
+2026-01-14T21:30:57+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:30:57+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:30:57+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:30:57+00:00       22770117   23454      0       0       0     205 
+2026-01-14T21:30:57+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:30:57+00:00        3501817   11965      0       3       0       0 
+2026-01-14T21:30:58+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:30:58+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:30:58+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:30:58+00:00       22770117   23454      0       0       0     205 
+2026-01-14T21:30:58+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:30:58+00:00        3501817   11965      0       3       0       0 
+2026-01-14T21:30:59+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:30:59+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:30:59+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:30:59+00:00       22770911   23462      0       0       0     205 
+2026-01-14T21:30:59+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:30:59+00:00        3506677   11972      0       3       0       0 
+2026-01-14T21:31:00+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:00+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:00+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:00+00:00       22770911   23462      0       0       0     205 
+2026-01-14T21:31:00+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:00+00:00        3506677   11972      0       3       0       0 
+2026-01-14T21:31:01+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:01+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:01+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:01+00:00       22770911   23462      0       0       0     205 
+2026-01-14T21:31:01+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:01+00:00        3506737   11973      0       3       0       0 
+2026-01-14T21:31:02+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:02+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:02+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:02+00:00       22770911   23462      0       0       0     205 
+2026-01-14T21:31:02+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:02+00:00        3506737   11973      0       3       0       0 
+2026-01-14T21:31:03+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:03+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:03+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:03+00:00       22771705   23470      0       0       0     205 
+2026-01-14T21:31:03+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:03+00:00        3511597   11980      0       3       0       0 
+2026-01-14T21:31:04+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:04+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:04+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:04+00:00       22771705   23470      0       0       0     205 
+2026-01-14T21:31:04+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:04+00:00        3511597   11980      0       3       0       0 
+2026-01-14T21:31:05+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:05+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:05+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:05+00:00       22771705   23470      0       0       0     205 
+2026-01-14T21:31:05+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:05+00:00        3511597   11980      0       3       0       0 
+2026-01-14T21:31:06+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:06+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:06+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:06+00:00       22771705   23470      0       0       0     205 
+2026-01-14T21:31:06+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:06+00:00        3511597   11980      0       3       0       0 
+2026-01-14T21:31:07+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:07+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:07+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:07+00:00       22772499   23478      0       0       0     205 
+2026-01-14T21:31:07+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:07+00:00        3516457   11987      0       3       0       0 
+2026-01-14T21:31:08+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:08+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:08+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:08+00:00       22772565   23479      0       0       0     205 
+2026-01-14T21:31:08+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:08+00:00        3516631   11988      0       3       0       0 
+2026-01-14T21:31:09+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:09+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:09+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:09+00:00       22772565   23479      0       0       0     205 
+2026-01-14T21:31:09+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:09+00:00        3516631   11988      0       3       0       0 
+2026-01-14T21:31:10+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:10+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:10+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:10+00:00       22772565   23479      0       0       0     205 
+2026-01-14T21:31:10+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:10+00:00        3516631   11988      0       3       0       0 
+2026-01-14T21:31:11+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:11+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:11+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:11+00:00       22772565   23479      0       0       0     205 
+2026-01-14T21:31:11+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:11+00:00        3516631   11988      0       3       0       0 
+2026-01-14T21:31:12+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:12+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:12+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:12+00:00       22773021   23483      0       0       0     205 
+2026-01-14T21:31:12+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:12+00:00        3516631   11988      0       3       0       0 
+2026-01-14T21:31:13+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:13+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:13+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:13+00:00       22773135   23484      0       0       0     205 
+2026-01-14T21:31:13+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:13+00:00        3516631   11988      0       3       0       0 
+2026-01-14T21:31:14+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:14+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:14+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:14+00:00       22773135   23484      0       0       0     205 
+2026-01-14T21:31:14+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:14+00:00        3516631   11988      0       3       0       0 
+2026-01-14T21:31:15+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:15+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:15+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:15+00:00       22773465   23488      0       0       0     205 
+2026-01-14T21:31:15+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:15+00:00        3516957   11991      0       3       0       0 
+2026-01-14T21:31:16+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:16+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:16+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:16+00:00       22773465   23488      0       0       0     208 
+2026-01-14T21:31:16+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:16+00:00        3516957   11991      0       3       0       0 
+2026-01-14T21:31:17+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:17+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:17+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:17+00:00       22773465   23488      0       0       0     208 
+2026-01-14T21:31:17+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:17+00:00        3516957   11991      0       3       0       0 
+2026-01-14T21:31:18+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:18+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:18+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:18+00:00       22773579   23489      0       0       0     208 
+2026-01-14T21:31:18+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:18+00:00        3516957   11991      0       3       0       0 
+2026-01-14T21:31:19+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:19+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:19+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:19+00:00       22773579   23489      0       0       0     208 
+2026-01-14T21:31:19+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:19+00:00        3516957   11991      0       3       0       0 
+2026-01-14T21:31:20+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:20+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:20+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:20+00:00       22773639   23490      0       0       0     208 
+2026-01-14T21:31:20+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:20+00:00        3517017   11992      0       3       0       0 
+2026-01-14T21:31:21+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:21+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:21+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:21+00:00       22773699   23491      0       0       0     208 
+2026-01-14T21:31:21+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:21+00:00        3517017   11992      0       3       0       0 
+2026-01-14T21:31:22+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:22+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:22+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:22+00:00       22773699   23491      0       0       0     208 
+2026-01-14T21:31:22+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:22+00:00        3517017   11992      0       3       0       0 
+2026-01-14T21:31:23+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:23+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:23+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:23+00:00       22773699   23491      0       0       0     208 
+2026-01-14T21:31:23+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:23+00:00        3517017   11992      0       3       0       0 
+2026-01-14T21:31:24+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:24+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:24+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:24+00:00       22773699   23491      0       0       0     208 
+2026-01-14T21:31:24+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:24+00:00        3517017   11992      0       3       0       0 
+2026-01-14T21:31:25+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:25+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:25+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:25+00:00       22774189   23496      0       0       0     208 
+2026-01-14T21:31:25+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:25+00:00        3517017   11992      0       3       0       0 
+2026-01-14T21:31:26+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:26+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:26+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:26+00:00       22774189   23496      0       0       0     212 
+2026-01-14T21:31:26+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:26+00:00        3517017   11992      0       3       0       0 
+2026-01-14T21:31:27+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:27+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:27+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:27+00:00       22774189   23496      0       0       0     212 
+2026-01-14T21:31:27+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:27+00:00        3517017   11992      0       3       0       0 
+2026-01-14T21:31:28+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:28+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:28+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:28+00:00       22774189   23496      0       0       0     212 
+2026-01-14T21:31:28+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:28+00:00        3517017   11992      0       3       0       0 
+2026-01-14T21:31:29+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:29+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:29+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:29+00:00       22774189   23496      0       0       0     212 
+2026-01-14T21:31:29+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:29+00:00        3517017   11992      0       3       0       0 
+2026-01-14T21:31:30+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:30+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:30+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:30+00:00       22774189   23496      0       0       0     212 
+2026-01-14T21:31:30+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:30+00:00        3517017   11992      0       3       0       0 
+2026-01-14T21:31:31+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:31+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:31+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:31+00:00       22774189   23496      0       0       0     212 
+2026-01-14T21:31:31+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:31+00:00        3517017   11992      0       3       0       0 
+2026-01-14T21:31:32+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:32+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:32+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:32+00:00       22774189   23496      0       0       0     212 
+2026-01-14T21:31:32+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:32+00:00        3517017   11992      0       3       0       0 
+2026-01-14T21:31:33+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:33+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:33+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:33+00:00       22774189   23496      0       0       0     212 
+2026-01-14T21:31:33+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:33+00:00        3517017   11992      0       3       0       0 
+2026-01-14T21:31:34+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:34+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:34+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:34+00:00       22774189   23496      0       0       0     212 
+2026-01-14T21:31:34+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:34+00:00        3517017   11992      0       3       0       0 
+2026-01-14T21:31:35+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:35+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:35+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:35+00:00       22774189   23496      0       0       0     212 
+2026-01-14T21:31:35+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:35+00:00        3517017   11992      0       3       0       0 
+2026-01-14T21:31:36+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:36+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:36+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:36+00:00       22774189   23496      0       0       0     212 
+2026-01-14T21:31:36+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:36+00:00        3517017   11992      0       3       0       0 
+2026-01-14T21:31:37+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:37+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:37+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:37+00:00       22774189   23496      0       0       0     212 
+2026-01-14T21:31:37+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:37+00:00        3517017   11992      0       3       0       0 
+2026-01-14T21:31:38+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:38+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:38+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:38+00:00       22774435   23499      0       0       0     212 
+2026-01-14T21:31:38+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:38+00:00        3517305   11994      0       3       0       0 
+2026-01-14T21:31:39+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:39+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:39+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:39+00:00       22774435   23499      0       0       0     212 
+2026-01-14T21:31:39+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:39+00:00        3517305   11994      0       3       0       0 
+2026-01-14T21:31:40+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:40+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:40+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:40+00:00       22774435   23499      0       0       0     212 
+2026-01-14T21:31:40+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:40+00:00        3517305   11994      0       3       0       0 
+2026-01-14T21:31:41+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:41+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:41+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:41+00:00       22774435   23499      0       0       0     212 
+2026-01-14T21:31:41+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:41+00:00        3517305   11994      0       3       0       0 
+2026-01-14T21:31:42+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:42+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:42+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:42+00:00       22774435   23499      0       0       0     212 
+2026-01-14T21:31:42+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:42+00:00        3517305   11994      0       3       0       0 
+2026-01-14T21:31:43+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:43+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:43+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:43+00:00       22774495   23500      0       0       0     212 
+2026-01-14T21:31:43+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:43+00:00        3517365   11995      0       3       0       0 
+2026-01-14T21:31:44+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:44+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:44+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:44+00:00       22774495   23500      0       0       0     212 
+2026-01-14T21:31:44+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:44+00:00        3517365   11995      0       3       0       0 
+2026-01-14T21:31:45+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:45+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:45+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:45+00:00       22774495   23500      0       0       0     212 
+2026-01-14T21:31:45+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:45+00:00        3517365   11995      0       3       0       0 
+2026-01-14T21:31:46+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:46+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:46+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:46+00:00       22774495   23500      0       0       0     212 
+2026-01-14T21:31:46+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:46+00:00        3517365   11995      0       3       0       0 
+2026-01-14T21:31:47+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:47+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:47+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:47+00:00       22774495   23500      0       0       0     212 
+2026-01-14T21:31:47+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:47+00:00        3517365   11995      0       3       0       0 
+2026-01-14T21:31:48+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:48+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:48+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:48+00:00       22774495   23500      0       0       0     212 
+2026-01-14T21:31:48+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:48+00:00        3517365   11995      0       3       0       0 
+2026-01-14T21:31:49+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:49+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:49+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:49+00:00       22774585   23501      0       0       0     212 
+2026-01-14T21:31:49+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:49+00:00        3517455   11996      0       3       0       0 
+2026-01-14T21:31:50+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:50+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:50+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:50+00:00       22774585   23501      0       0       0     212 
+2026-01-14T21:31:50+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:50+00:00        3517455   11996      0       3       0       0 
+2026-01-14T21:31:51+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:51+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:51+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:51+00:00       22774585   23501      0       0       0     212 
+2026-01-14T21:31:51+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:51+00:00        3517455   11996      0       3       0       0 
+2026-01-14T21:31:52+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:52+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:52+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:52+00:00       22774585   23501      0       0       0     212 
+2026-01-14T21:31:52+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:52+00:00        3517455   11996      0       3       0       0 
+2026-01-14T21:31:53+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:53+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:53+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:53+00:00       22774585   23501      0       0       0     212 
+2026-01-14T21:31:53+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:53+00:00        3517455   11996      0       3       0       0 
+2026-01-14T21:31:54+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:54+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:54+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:54+00:00       22774645   23502      0       0       0     212 
+2026-01-14T21:31:54+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:54+00:00        3517515   11997      0       3       0       0 
+2026-01-14T21:31:55+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:55+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:55+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:55+00:00       22774645   23502      0       0       0     212 
+2026-01-14T21:31:55+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:55+00:00        3517515   11997      0       3       0       0 
+2026-01-14T21:31:56+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:56+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:56+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:56+00:00       22774705   23503      0       0       0     212 
+2026-01-14T21:31:56+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:56+00:00        3517515   11997      0       3       0       0 
+2026-01-14T21:31:57+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:57+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:57+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:57+00:00       22774705   23503      0       0       0     212 
+2026-01-14T21:31:57+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:57+00:00        3517515   11997      0       3       0       0 
+2026-01-14T21:31:58+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:58+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:58+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:58+00:00       22774705   23503      0       0       0     212 
+2026-01-14T21:31:58+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:58+00:00        3517515   11997      0       3       0       0 
+2026-01-14T21:31:59+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:31:59+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:31:59+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:31:59+00:00       22774705   23503      0       0       0     212 
+2026-01-14T21:31:59+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:31:59+00:00        3517515   11997      0       3       0       0 
+2026-01-14T21:32:00+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:00+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:00+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:00+00:00       22774705   23503      0       0       0     212 
+2026-01-14T21:32:00+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:00+00:00        3517515   11997      0       3       0       0 
+2026-01-14T21:32:01+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:01+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:01+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:01+00:00       22774705   23503      0       0       0     212 
+2026-01-14T21:32:01+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:01+00:00        3517515   11997      0       3       0       0 
+2026-01-14T21:32:02+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:02+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:02+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:02+00:00       22774705   23503      0       0       0     212 
+2026-01-14T21:32:02+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:02+00:00        3517515   11997      0       3       0       0 
+2026-01-14T21:32:03+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:03+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:03+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:03+00:00       22774705   23503      0       0       0     212 
+2026-01-14T21:32:03+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:03+00:00        3517515   11997      0       3       0       0 
+2026-01-14T21:32:04+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:04+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:04+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:04+00:00       22775721   23512      0       0       0     212 
+2026-01-14T21:32:04+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:04+00:00        3518494   12007      0       3       0       0 
+2026-01-14T21:32:05+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:05+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:05+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:05+00:00       22775721   23512      0       0       0     212 
+2026-01-14T21:32:05+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:05+00:00        3518494   12007      0       3       0       0 
+2026-01-14T21:32:06+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:06+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:06+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:06+00:00       22775721   23512      0       0       0     212 
+2026-01-14T21:32:06+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:06+00:00        3518494   12007      0       3       0       0 
+2026-01-14T21:32:07+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:07+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:07+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:07+00:00       22775721   23512      0       0       0     212 
+2026-01-14T21:32:07+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:07+00:00        3518494   12007      0       3       0       0 
+2026-01-14T21:32:08+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:08+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:08+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:08+00:00       22775721   23512      0       0       0     212 
+2026-01-14T21:32:08+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:08+00:00        3518494   12007      0       3       0       0 
+2026-01-14T21:32:09+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:09+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:09+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:09+00:00       22775781   23513      0       0       0     212 
+2026-01-14T21:32:09+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:09+00:00        3518554   12008      0       3       0       0 
+2026-01-14T21:32:10+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:10+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:10+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:10+00:00       22775781   23513      0       0       0     212 
+2026-01-14T21:32:10+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:10+00:00        3518554   12008      0       3       0       0 
+2026-01-14T21:32:11+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:11+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:11+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:11+00:00       22775781   23513      0       0       0     212 
+2026-01-14T21:32:11+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:11+00:00        3518554   12008      0       3       0       0 
+2026-01-14T21:32:12+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:12+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:12+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:12+00:00       22775781   23513      0       0       0     212 
+2026-01-14T21:32:12+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:12+00:00        3518554   12008      0       3       0       0 
+2026-01-14T21:32:13+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:13+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:13+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:13+00:00       22775781   23513      0       0       0     212 
+2026-01-14T21:32:13+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:13+00:00        3518554   12008      0       3       0       0 
+2026-01-14T21:32:14+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:14+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:14+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:14+00:00       22775781   23513      0       0       0     212 
+2026-01-14T21:32:14+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:14+00:00        3518554   12008      0       3       0       0 
+2026-01-14T21:32:15+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:15+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:15+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:15+00:00       22775925   23515      0       0       0     214 
+2026-01-14T21:32:15+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:15+00:00        3518758   12010      0       3       0       0 
+2026-01-14T21:32:16+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:16+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:16+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:16+00:00       22775925   23515      0       0       0     214 
+2026-01-14T21:32:16+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:16+00:00        3518758   12010      0       3       0       0 
+2026-01-14T21:32:17+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:17+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:17+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:17+00:00       22775925   23515      0       0       0     214 
+2026-01-14T21:32:17+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:17+00:00        3518758   12010      0       3       0       0 
+2026-01-14T21:32:18+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:18+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:18+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:18+00:00       22775925   23515      0       0       0     214 
+2026-01-14T21:32:18+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:18+00:00        3518758   12010      0       3       0       0 
+2026-01-14T21:32:19+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:19+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:19+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:19+00:00       22775925   23515      0       0       0     214 
+2026-01-14T21:32:19+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:19+00:00        3518758   12010      0       3       0       0 
+2026-01-14T21:32:20+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:20+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:20+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:20+00:00       22775925   23515      0       0       0     214 
+2026-01-14T21:32:20+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:20+00:00        3518758   12010      0       3       0       0 
+2026-01-14T21:32:21+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:21+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:21+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:21+00:00       22775925   23515      0       0       0     214 
+2026-01-14T21:32:21+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:21+00:00        3518758   12010      0       3       0       0 
+2026-01-14T21:32:22+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:22+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:22+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:22+00:00       22775925   23515      0       0       0     214 
+2026-01-14T21:32:22+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:22+00:00        3518758   12010      0       3       0       0 
+2026-01-14T21:32:23+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:23+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:23+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:23+00:00       22775925   23515      0       0       0     214 
+2026-01-14T21:32:23+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:23+00:00        3518758   12010      0       3       0       0 
+2026-01-14T21:32:24+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:24+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:24+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:24+00:00       22775925   23515      0       0       0     214 
+2026-01-14T21:32:24+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:24+00:00        3518758   12010      0       3       0       0 
+2026-01-14T21:32:25+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:25+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:25+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:25+00:00       22776301   23519      0       0       0     218 
+2026-01-14T21:32:25+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:25+00:00        3518758   12010      0       3       0       0 
+2026-01-14T21:32:26+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:26+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:26+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:26+00:00       22776301   23519      0       0       0     218 
+2026-01-14T21:32:26+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:26+00:00        3518758   12010      0       3       0       0 
+2026-01-14T21:32:27+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:27+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:27+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:27+00:00       22776301   23519      0       0       0     218 
+2026-01-14T21:32:27+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:27+00:00        3518758   12010      0       3       0       0 
+2026-01-14T21:32:28+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:28+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:28+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:28+00:00       22776301   23519      0       0       0     218 
+2026-01-14T21:32:28+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:28+00:00        3518758   12010      0       3       0       0 
+2026-01-14T21:32:29+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:29+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:29+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:29+00:00       22776301   23519      0       0       0     218 
+2026-01-14T21:32:29+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:29+00:00        3518758   12010      0       3       0       0 
+2026-01-14T21:32:30+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:30+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:30+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:30+00:00       22776301   23519      0       0       0     218 
+2026-01-14T21:32:30+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:30+00:00        3518758   12010      0       3       0       0 
+2026-01-14T21:32:31+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:31+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:31+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:31+00:00       22776301   23519      0       0       0     218 
+2026-01-14T21:32:31+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:31+00:00        3518758   12010      0       3       0       0 
+2026-01-14T21:32:32+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:32+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:32+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:32+00:00       22776301   23519      0       0       0     218 
+2026-01-14T21:32:32+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:32+00:00        3518758   12010      0       3       0       0 
+2026-01-14T21:32:33+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:33+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:33+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:33+00:00       22776301   23519      0       0       0     218 
+2026-01-14T21:32:33+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:33+00:00        3518758   12010      0       3       0       0 
+2026-01-14T21:32:34+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:34+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:34+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:34+00:00       22777251   23527      0       0       0     218 
+2026-01-14T21:32:34+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:34+00:00        3519820   12021      0       3       0       0 
+2026-01-14T21:32:35+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:35+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:35+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:35+00:00       22777251   23527      0       0       0     218 
+2026-01-14T21:32:35+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:35+00:00        3519820   12021      0       3       0       0 
+2026-01-14T21:32:36+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:36+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:36+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:36+00:00       22777251   23527      0       0       0     218 
+2026-01-14T21:32:36+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:36+00:00        3519820   12021      0       3       0       0 
+2026-01-14T21:32:37+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:37+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:37+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:37+00:00       22777251   23527      0       0       0     218 
+2026-01-14T21:32:37+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:37+00:00        3519820   12021      0       3       0       0 
+2026-01-14T21:32:38+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:38+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:38+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:38+00:00       22777251   23527      0       0       0     218 
+2026-01-14T21:32:38+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:38+00:00        3519820   12021      0       3       0       0 
+2026-01-14T21:32:39+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:39+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:39+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:39+00:00       22777251   23527      0       0       0     218 
+2026-01-14T21:32:39+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:39+00:00        3519820   12021      0       3       0       0 
+2026-01-14T21:32:40+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:40+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:40+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:40+00:00       22777251   23527      0       0       0     218 
+2026-01-14T21:32:40+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:40+00:00        3519820   12021      0       3       0       0 
+2026-01-14T21:32:41+00:00 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+2026-01-14T21:32:41+00:00     link/ether 08:00:27:63:c0:d1 brd ff:ff:ff:ff:ff:ff
+2026-01-14T21:32:41+00:00     RX:  bytes packets errors dropped  missed   mcast           
+2026-01-14T21:32:41+00:00       22781355   23561      0       0       0     218 
+2026-01-14T21:32:41+00:00     TX:  bytes packets errors dropped carrier collsns           
+2026-01-14T21:32:41+00:00        3530634   12064      0       3       0       0 

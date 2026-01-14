@@ -1,0 +1,6 @@
+Imported USB devices
+====================
+Port 00: <Port in Use> at High Speed(480Mbps)
+       Alcor Micro Corp. : Flash Drive (058f:6387)
+       3-1 -> usbip://192.168.1.149:3240/3-2
+           -> remote bus/dev 003/004

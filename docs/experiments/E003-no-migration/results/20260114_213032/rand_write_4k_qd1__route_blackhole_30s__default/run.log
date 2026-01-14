@@ -1,0 +1,10 @@
+[2026-01-14T21:30:32+00:00] run_one: case=rand_write_4k_qd1__route_blackhole_30s__default
+[2026-01-14T21:30:32+00:00] preflight: start
+[2026-01-14T21:30:32+00:00] preflight: umount /mnt/usb
+[2026-01-14T21:30:33+00:00] preflight: mount /dev/sdb1 -> /mnt/usb
+[2026-01-14T21:30:33+00:00] preflight: write-test
+[2026-01-14T21:30:38+00:00] preflight: ok
+[2026-01-14T21:30:38+00:00] fio: starting (see fio.cmd)
+[2026-01-14T21:31:08+00:00] inject: add blackhole route to 192.168.1.149
+[2026-01-14T21:31:38+00:00] revert: del blackhole route to 192.168.1.149
+[2026-01-14T21:32:42+00:00] run_one: done out=/home/danila/E003-no-migration/results/20260114_213032/rand_write_4k_qd1__route_blackhole_30s__default

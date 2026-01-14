@@ -1,0 +1,1 @@
+fio --name=usbip_migration_rand_write_4k_qd1 --filename=/mnt/usb/fio_test.bin --rw=randwrite --bs=4k --direct=1 --iodepth=1 --numjobs=1 --time_based=1 --runtime=120 --group_reporting=1 --size=256M --output-format=json --output=/home/danila/E003-no-migration/results/20260114_213749/rand_write_4k_qd1__route_blackhole_60s__default/fio.json
