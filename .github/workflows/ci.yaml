@@ -50,6 +50,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -57,8 +59,27 @@ jobs:
           go-version-file: go.mod
           cache: true
 
+      - name: Resolve version
+        id: version
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            version="${GITHUB_REF_NAME}"
+          else
+            version="$(git describe --tags --always --dirty)"
+          fi
+
+          echo "value=${version}" >> "${GITHUB_OUTPUT}"
+
       - name: Build
-        run: go build -trimpath  -o dist/usb-quic ./cmd/usb-quic
+        env:
+          VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          go build \
+            -trimpath \
+            -ldflags "-s -w -X usb-quic/internal/adapter/delivery/cli.version=${VERSION}" \
+            -o dist/usb-quic \
+            ./cmd/usb-quic
 
       - name: Upload binary
         uses: actions/upload-artifact@v4
