@@ -2,7 +2,6 @@
 package cli
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -13,11 +12,10 @@ import (
 const (
 	appName        = "usb-quic"
 	defaultTCPPort = 3240
-	version        = "0.1.0"
 )
 
-// ErrNotImplemented marks commands whose USB/IP behavior is not wired yet.
-var ErrNotImplemented = errors.New("command is not implemented yet")
+// version is injected by build flags. The fallback is used for local builds.
+var version = "dev"
 
 type rootOptions struct {
 	debug   bool
