@@ -1,0 +1,82 @@
+version: "2"
+
+linters:
+  default: all
+
+  disable:
+    - interfacebloat
+    - wsl
+    - tagliatelle
+
+  enable:
+    - wsl_v5
+
+  settings:
+    varnamelen:
+      ignore-names:
+        - id
+        - ip
+        - db
+        - wg
+        - ok
+        - tx
+        - nc
+        - tt
+
+    wsl_v5:
+      allow-first-in-block: true
+      allow-whole-block: false
+      branch-max-lines: 2
+
+    depguard:
+      rules:
+        internal-pkg:
+          list-mode: lax
+          files:
+            - "**/broker/internal/pkg/**/*.go"
+          deny:
+            - pkg: "broker/internal/app/"
+              desc: "internal/pkg must not depend on app layer"
+        pkg:
+          list-mode: lax
+          files:
+            - "**/broker/pkg/**/*.go"
+          deny:
+            - pkg: "broker/internal/app/"
+              desc: "internal/pkg must not depend on internal app layer"
+            - pkg: "broker/internal/pkg/"
+              desc: "internal/pkg must not depend on internal pkg layer"
+
+  exclusions:
+    rules:
+      - path: '(.+)_test\.go'
+        linters:
+          - containedctx
+          - funlen
+          - gocognit
+          - gocyclo
+          - maintidx
+          - dupl
+          - paralleltest
+          - tparallel
+          - testpackage
+          - thelper
+          - gochecknoglobals
+          - wrapcheck
+          - revive
+      - path: 'internal/app/agent/application/info/retrieve_info\.go'
+        linters:
+          - typecheck
+      - path: 'internal/app/agent/application/available_protocols/available_protocols\.go'
+        linters:
+          - typecheck
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+
+run:
+  build-tags:
+    - dev
+    - auth_off
