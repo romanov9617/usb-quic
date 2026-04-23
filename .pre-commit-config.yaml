@@ -1,0 +1,29 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-merge-conflict
+
+  - repo: local
+    hooks:
+      - id: gofmt
+        name: gofmt
+        entry: bash -c 'gofmt -w $(git ls-files "*.go")'
+        language: system
+        pass_filenames: false
+
+      - id: goimports
+        name: goimports
+        entry: bash -c 'goimports -w $(git ls-files "*.go")'
+        language: system
+        pass_filenames: false
+
+      - id: golangci-lint
+        name: golangci-lint
+        entry: bash -c 'golangci-lint run'
+        language: system
+        pass_filenames: false
