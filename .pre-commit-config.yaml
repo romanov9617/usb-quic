@@ -24,6 +24,6 @@ repos:
 
       - id: golangci-lint
         name: golangci-lint
-        entry: bash -c 'golangci-lint run'
+        entry: bash -c 'golangci-lint run --fix'
         language: system
         pass_filenames: false
