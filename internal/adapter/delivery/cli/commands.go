@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"net"
+	"strconv"
 
 	"github.com/spf13/cobra"
 
@@ -175,17 +176,12 @@ func dialUSBIP(cmd *cobra.Command, runtime Runtime, remote string, port int) err
 		Host: remote,
 		Port: port,
 	}
+	tcpAddress := net.JoinHostPort("", strconv.Itoa(port))
 
-	conn, err := runtime.USBIPTransport.Dial(cmd.Context(), endpoint)
+	err := runtime.USBIPTransport.ProxyTCPToQUIC(cmd.Context(), tcpAddress, endpoint.Address())
 	if err != nil {
-		return fmt.Errorf("open outgoing usbip connection: %w", err)
+		return fmt.Errorf("proxy usbip tcp to quic: %w", err)
 	}
 
-	defer closeConnection(conn)
-
 	return nil
-}
-
-func closeConnection(conn net.Conn) {
-	_ = conn.Close()
 }

@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log/slog"
 	"os/signal"
 	"syscall"
 
@@ -80,32 +79,22 @@ func ExecuteCLI(role Role, stdin io.Reader, stdout, stderr io.Writer) error {
 	return nil
 }
 
-func newLogLevel() *slog.LevelVar {
-	level := &slog.LevelVar{}
-	level.Set(slog.LevelInfo)
-
-	return level
+func newLogLevel() *logging.LevelVar {
+	return logging.NewVerboseLevel(false)
 }
 
-func newLogger(streams Streams, level *slog.LevelVar) *slog.Logger {
-	textHandler := slog.NewTextHandler(streams.Stderr, &slog.HandlerOptions{
-		AddSource:   false,
-		Level:       level,
-		ReplaceAttr: nil,
-	})
-	multiHandler := logging.NewMultiHandler(textHandler)
-
-	return slog.New(multiHandler)
+func newLogger(streams Streams, level *logging.LevelVar) *logging.Logger {
+	return logging.NewTextLogger(streams.Stderr, level)
 }
 
-func newUSBIPTransport(logger *slog.Logger) *usbip.Transport {
+func newUSBIPTransport(logger *logging.Logger) *usbip.Transport {
 	return usbip.NewTransport(usbip.WithLogger(logger))
 }
 
 func newRootCommand(
 	streams Streams,
 	config runtimeConfig,
-	level *slog.LevelVar,
+	level *logging.LevelVar,
 	transport *usbip.Transport,
 ) *cobra.Command {
 	runtime := cli.Runtime{

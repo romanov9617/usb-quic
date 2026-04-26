@@ -2,24 +2,16 @@
 package main
 
 import (
-	"log/slog"
 	"os"
 
+	"usb-quic/internal/adapter/logging"
 	"usb-quic/internal/app"
 )
 
 func main() {
 	err := app.ExecuteCLI(app.RoleServer, os.Stdin, os.Stdout, os.Stderr)
 	if err != nil {
-		logger().Error("command failed", slog.Any("error", err))
+		logging.NewDefaultLogger(os.Stderr).Error("command failed", "error", err)
 		os.Exit(1)
 	}
-}
-
-func logger() *slog.Logger {
-	return slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
-		AddSource:   false,
-		Level:       slog.LevelInfo,
-		ReplaceAttr: nil,
-	}))
 }

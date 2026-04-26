@@ -5,12 +5,12 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log/slog"
 	"net"
 	"strconv"
 
 	"github.com/spf13/cobra"
 
+	"usb-quic/internal/adapter/logging"
 	"usb-quic/internal/adapter/usbip"
 )
 
@@ -41,14 +41,14 @@ const (
 
 // USBIPTransport is the USB/IP TCP transport used by CLI commands.
 type USBIPTransport interface {
-	Listen(ctx context.Context, address string, handler usbip.ConnectionHandler) error
-	Dial(ctx context.Context, endpoint usbip.Endpoint) (net.Conn, error)
+	ProxyTCPToQUIC(ctx context.Context, tcpAddress, quicAddress string) error
+	ProxyQUICToTCP(ctx context.Context, quicAddress, tcpAddress string) error
 }
 
 // Runtime contains CLI runtime dependencies.
 type Runtime struct {
 	Role           Role
-	LogLevel       *slog.LevelVar
+	LogLevel       *logging.LevelVar
 	USBIPTransport USBIPTransport
 }
 
@@ -132,17 +132,7 @@ func notImplemented(name string) error {
 }
 
 func configureLogLevel(runtime Runtime, verbose bool) {
-	if runtime.LogLevel == nil {
-		return
-	}
-
-	if verbose {
-		runtime.LogLevel.Set(slog.LevelDebug)
-
-		return
-	}
-
-	runtime.LogLevel.Set(slog.LevelInfo)
+	logging.SetVerboseLevel(runtime.LogLevel, verbose)
 }
 
 func listenUSBIP(cmd *cobra.Command, runtime Runtime, port int) error {
@@ -155,14 +145,12 @@ func listenUSBIP(cmd *cobra.Command, runtime Runtime, port int) error {
 		ctx = context.Background()
 	}
 
-	address := net.JoinHostPort("", strconv.Itoa(port))
-	handler := usbip.ConnectionHandlerFunc(func(_ context.Context, _ net.Conn) error {
-		return nil
-	})
+	quicAddress := net.JoinHostPort("", strconv.Itoa(port))
+	tcpAddress := net.JoinHostPort("127.0.0.1", strconv.Itoa(port))
 
-	err := runtime.USBIPTransport.Listen(ctx, address, handler)
+	err := runtime.USBIPTransport.ProxyQUICToTCP(ctx, quicAddress, tcpAddress)
 	if err != nil {
-		return fmt.Errorf("listen usbip: %w", err)
+		return fmt.Errorf("proxy usbip quic to tcp: %w", err)
 	}
 
 	return nil

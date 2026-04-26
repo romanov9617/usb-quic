@@ -1,5 +1,5 @@
-// Package logging contains application logging helpers.
-package logging
+// Package multi contains a fan-out slog handler.
+package multi
 
 import (
 	"context"
@@ -7,13 +7,13 @@ import (
 	"log/slog"
 )
 
-// MultiHandler fans slog records out to several handlers.
-type MultiHandler struct {
+// Handler fans slog records out to several handlers.
+type Handler struct {
 	handlers []slog.Handler
 }
 
 // NewMultiHandler creates a handler that writes each record to all enabled handlers.
-func NewMultiHandler(handlers ...slog.Handler) *MultiHandler {
+func NewMultiHandler(handlers ...slog.Handler) *Handler {
 	filteredHandlers := make([]slog.Handler, 0, len(handlers))
 	for _, handler := range handlers {
 		if handler != nil {
@@ -21,13 +21,13 @@ func NewMultiHandler(handlers ...slog.Handler) *MultiHandler {
 		}
 	}
 
-	return &MultiHandler{
+	return &Handler{
 		handlers: filteredHandlers,
 	}
 }
 
 // Enabled reports whether at least one child handler accepts level.
-func (handler *MultiHandler) Enabled(ctx context.Context, level slog.Level) bool {
+func (handler *Handler) Enabled(ctx context.Context, level slog.Level) bool {
 	for _, child := range handler.handlers {
 		if child.Enabled(ctx, level) {
 			return true
@@ -38,7 +38,7 @@ func (handler *MultiHandler) Enabled(ctx context.Context, level slog.Level) bool
 }
 
 // Handle sends record to each enabled child handler.
-func (handler *MultiHandler) Handle(ctx context.Context, record slog.Record) error {
+func (handler *Handler) Handle(ctx context.Context, record slog.Record) error {
 	for index, child := range handler.handlers {
 		if !child.Enabled(ctx, record.Level) {
 			continue
@@ -56,7 +56,7 @@ func (handler *MultiHandler) Handle(ctx context.Context, record slog.Record) err
 }
 
 // WithAttrs returns a grouped handler with attrs attached to every child handler.
-func (handler *MultiHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+func (handler *Handler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	children := make([]slog.Handler, 0, len(handler.handlers))
 	for _, child := range handler.handlers {
 		children = append(children, child.WithAttrs(attrs))
@@ -66,7 +66,7 @@ func (handler *MultiHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 }
 
 // WithGroup returns a grouped handler with group attached to every child handler.
-func (handler *MultiHandler) WithGroup(name string) slog.Handler {
+func (handler *Handler) WithGroup(name string) slog.Handler {
 	children := make([]slog.Handler, 0, len(handler.handlers))
 	for _, child := range handler.handlers {
 		children = append(children, child.WithGroup(name))
