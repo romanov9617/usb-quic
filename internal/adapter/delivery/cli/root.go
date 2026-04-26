@@ -4,7 +4,6 @@ package cli
 import (
 	"fmt"
 	"io"
-	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -21,16 +20,6 @@ type rootOptions struct {
 	debug   bool
 	log     bool
 	tcpPort int
-}
-
-// Execute runs the usb-quic CLI using process stdin/stdout/stderr.
-func Execute() error {
-	err := NewRootCommand(os.Stdin, os.Stdout, os.Stderr).Execute()
-	if err != nil {
-		return fmt.Errorf("execute cli: %w", err)
-	}
-
-	return nil
 }
 
 // NewRootCommand builds a cobra command tree compatible with the usbip CLI shape.

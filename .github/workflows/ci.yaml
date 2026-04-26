@@ -45,7 +45,7 @@ jobs:
         run: go test ./...
 
   build:
-    name: Build Binary
+    name: Build Binaries
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -75,14 +75,19 @@ jobs:
         env:
           VERSION: ${{ steps.version.outputs.value }}
         run: |
-          go build \
-            -trimpath \
-            -ldflags "-s -w -X usb-quic/internal/adapter/delivery/cli.version=${VERSION}" \
-            -o dist/usb-quic \
-            ./cmd/usb-quic
+          mkdir -p dist
+          for bin in server client; do
+            go build \
+              -trimpath \
+              -ldflags "-s -w -X usb-quic/internal/adapter/delivery/cli.version=${VERSION}" \
+              -o "dist/${bin}" \
+              "./cmd/${bin}"
+          done
 
-      - name: Upload binary
+      - name: Upload binaries
         uses: actions/upload-artifact@v4
         with:
           name: usb-quic-linux-amd64
-          path: dist/usb-quic
+          path: |
+            dist/server
+            dist/client
