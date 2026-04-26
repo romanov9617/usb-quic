@@ -1,7 +1,5 @@
-BIN_NAME := usb-quic
-CMD_PKG := ./cmd/usb-quic
+BINARIES := server client
 DIST_DIR := dist
-BIN_PATH := $(DIST_DIR)/$(BIN_NAME)
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 VERSION_VAR := usb-quic/internal/adapter/delivery/cli.version
 LDFLAGS := -s -w -X $(VERSION_VAR)=$(VERSION)
@@ -10,7 +8,7 @@ LDFLAGS := -s -w -X $(VERSION_VAR)=$(VERSION)
 
 help:
 	@echo "Available targets:"
-	@echo "  make build    Build $(BIN_PATH) with VERSION=$(VERSION)"
+	@echo "  make build    Build binaries into $(DIST_DIR) with VERSION=$(VERSION)"
 	@echo "  make test     Run unit tests"
 	@echo "  make bench    Run Go benchmarks with memory stats"
 	@echo "  make stats    Print project and test coverage stats"
@@ -18,7 +16,9 @@ help:
 
 build:
 	@mkdir -p $(DIST_DIR)
-	go build -trimpath -ldflags "$(LDFLAGS)" -o $(BIN_PATH) $(CMD_PKG)
+	@for bin in $(BINARIES); do \
+		go build -trimpath -ldflags "$(LDFLAGS)" -o "$(DIST_DIR)/$$bin" "./cmd/$$bin"; \
+	done
 
 test:
 	go test ./...
@@ -33,12 +33,15 @@ stats:
 	@echo "Go lines: $$(git ls-files '*.go' | xargs -r wc -l | tail -n 1 | awk '{print $$1}')"
 	@echo "Coverage:"
 	@go test -cover ./...
-	@if [ -f "$(BIN_PATH)" ]; then \
-		echo "Binary: $(BIN_PATH)"; \
-		ls -lh "$(BIN_PATH)" | awk '{print "Binary size: " $$5}'; \
-	else \
-		echo "Binary: not built"; \
-	fi
+	@for bin in $(BINARIES); do \
+		path="$(DIST_DIR)/$$bin"; \
+		if [ -f "$$path" ]; then \
+			echo "Binary: $$path"; \
+			ls -lh "$$path" | awk '{print "Binary size: " $$5}'; \
+		else \
+			echo "Binary: $$path not built"; \
+		fi; \
+	done
 
 clean:
 	rm -rf $(DIST_DIR)
