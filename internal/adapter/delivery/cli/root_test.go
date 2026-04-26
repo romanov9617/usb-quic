@@ -19,7 +19,7 @@ func TestRootHelpMatchesUSBIPShape(t *testing.T) {
 		t.Fatalf("execute help: %v", err)
 	}
 
-	want := `usage: usb-quic [--debug] [--log] [--tcp-port PORT] [version] [help] <command> <args>
+	want := `usage: usb-quic [-v] [--debug] [--log] [--tcp-port PORT] [version] [help] <command> <args>
 
   attach     Attach a remote USB device
   detach     Detach a remote USB device

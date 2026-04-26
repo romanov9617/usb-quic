@@ -7,20 +7,12 @@ linters:
     - interfacebloat
     - wsl
     - tagliatelle
+    - depguard
 
   enable:
     - wsl_v5
 
   settings:
-    depguard:
-      rules:
-        main:
-          allow:
-            - $gostd
-            - github.com/spf13/cobra
-            - go.uber.org/fx
-            - usb-quic/internal/adapter/delivery/cli
-            - usb-quic/internal/app
 
     varnamelen:
       ignore-names:

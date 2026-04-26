@@ -2,8 +2,11 @@ package cli
 
 import (
 	"fmt"
+	"net"
 
 	"github.com/spf13/cobra"
+
+	"usb-quic/internal/adapter/usbip"
 )
 
 type attachOptions struct {
@@ -25,7 +28,7 @@ type deviceOptions struct {
 	busid string
 }
 
-func newAttachCommand() *cobra.Command {
+func newAttachCommand(runtime Runtime, rootOpts *rootOptions) *cobra.Command {
 	opts := attachOptions{
 		remote: "",
 		busid:  "",
@@ -36,7 +39,11 @@ func newAttachCommand() *cobra.Command {
 		Use:   "attach -r HOST -b BUSID",
 		Short: "Attach a remote USB device",
 		Args:  cobra.NoArgs,
-		RunE: func(_ *cobra.Command, _ []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			if canDialUSBIP(runtime, opts.remote) {
+				return dialUSBIP(cmd, runtime, opts.remote, rootOpts.tcpPort)
+			}
+
 			return notImplemented("attach")
 		},
 	}
@@ -67,7 +74,7 @@ func newDetachCommand() *cobra.Command {
 	return cmd
 }
 
-func newListCommand() *cobra.Command {
+func newListCommand(runtime Runtime, rootOpts *rootOptions) *cobra.Command {
 	opts := listOptions{
 		local:    false,
 		remote:   "",
@@ -79,7 +86,11 @@ func newListCommand() *cobra.Command {
 		Use:   "list [-l] [-r HOST]",
 		Short: "List exportable or local USB devices",
 		Args:  cobra.NoArgs,
-		RunE: func(_ *cobra.Command, _ []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			if canDialUSBIP(runtime, opts.remote) {
+				return dialUSBIP(cmd, runtime, opts.remote, rootOpts.tcpPort)
+			}
+
 			return notImplemented("list")
 		},
 	}
@@ -153,4 +164,28 @@ func newVersionCommand() *cobra.Command {
 			_, _ = fmt.Fprintln(cmd.OutOrStdout(), version)
 		},
 	}
+}
+
+func canDialUSBIP(runtime Runtime, remote string) bool {
+	return runtime.Role == RoleClient && runtime.USBIPTransport != nil && remote != ""
+}
+
+func dialUSBIP(cmd *cobra.Command, runtime Runtime, remote string, port int) error {
+	endpoint := usbip.Endpoint{
+		Host: remote,
+		Port: port,
+	}
+
+	conn, err := runtime.USBIPTransport.Dial(cmd.Context(), endpoint)
+	if err != nil {
+		return fmt.Errorf("open outgoing usbip connection: %w", err)
+	}
+
+	defer closeConnection(conn)
+
+	return nil
+}
+
+func closeConnection(conn net.Conn) {
+	_ = conn.Close()
 }
