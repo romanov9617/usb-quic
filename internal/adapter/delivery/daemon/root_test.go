@@ -2,9 +2,14 @@ package daemon
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"testing"
+
+	"usb-quic/internal/config"
 )
+
+const testPIDFile = "/tmp/usbipd.pid"
 
 func TestRootHelpMatchesUSBIPDShape(t *testing.T) {
 	t.Parallel()
@@ -70,9 +75,10 @@ func TestUSBIPDCompatibleFlagsParse(t *testing.T) {
 		{name: "device", args: []string{"--device"}},
 		{name: "daemon", args: []string{"--daemon"}},
 		{name: "debug", args: []string{"--debug"}},
-		{name: "pid", args: []string{"--pid", "/tmp/usbipd.pid"}},
+		{name: "pid", args: []string{"--pid", testPIDFile}},
+		{name: "attached pid", args: []string{"-P" + testPIDFile}},
 		{name: "tcp port", args: []string{"--tcp-port", "3241"}},
-		{name: "short flags", args: []string{"-4", "-6", "-e", "-D", "-d", "-P", "/tmp/usbipd.pid", "-t", "3241"}},
+		{name: "short flags", args: []string{"-4", "-6", "-e", "-D", "-d", "-P", testPIDFile, "-t", "3241"}},
 	}
 
 	for _, tt := range tests {
@@ -106,4 +112,100 @@ func TestVersionCommand(t *testing.T) {
 	if got := stdout.String(); got != "usbipd (usb-quic "+version+")\n" {
 		t.Fatalf("unexpected version output: %q", got)
 	}
+}
+
+func TestRunPassesConfigToService(t *testing.T) {
+	t.Parallel()
+
+	runner := &recordingRunner{
+		called: false,
+		config: config.Daemon{
+			BindIPv4:   false,
+			BindIPv6:   false,
+			DeviceMode: false,
+			Daemonize:  false,
+			Debug:      false,
+			PIDFile:    "",
+			TCPPort:    0,
+		},
+		err: ErrNotImplemented,
+	}
+	runtime := Runtime{
+		LogLevel: nil,
+		Run:      runner.Run,
+	}
+
+	cmd := NewRootCommandWithRuntime(nil, bytes.NewBuffer(nil), bytes.NewBuffer(nil), runtime)
+	cmd.SetArgs([]string{"-4", "-6", "-e", "-D", "-d", "-P", testPIDFile, "-t", "3241"})
+
+	err := cmd.Execute()
+	if !errors.Is(err, ErrNotImplemented) {
+		t.Fatalf("expected ErrNotImplemented, got %v", err)
+	}
+
+	if !runner.called {
+		t.Fatal("runner was not called")
+	}
+
+	want := config.Daemon{
+		BindIPv4:   true,
+		BindIPv6:   true,
+		DeviceMode: true,
+		Daemonize:  true,
+		Debug:      true,
+		PIDFile:    testPIDFile,
+		TCPPort:    3241,
+	}
+	if runner.config != want {
+		t.Fatalf("unexpected config: got=%+v want=%+v", runner.config, want)
+	}
+}
+
+func TestVersionDoesNotCallService(t *testing.T) {
+	t.Parallel()
+
+	runner := &recordingRunner{
+		called: false,
+		config: config.Daemon{
+			BindIPv4:   false,
+			BindIPv6:   false,
+			DeviceMode: false,
+			Daemonize:  false,
+			Debug:      false,
+			PIDFile:    "",
+			TCPPort:    0,
+		},
+		err: nil,
+	}
+	runtime := Runtime{
+		LogLevel: nil,
+		Run:      runner.Run,
+	}
+
+	var stdout bytes.Buffer
+
+	cmd := NewRootCommandWithRuntime(nil, &stdout, bytes.NewBuffer(nil), runtime)
+	cmd.SetArgs([]string{"--version"})
+
+	err := cmd.Execute()
+	if err != nil {
+		t.Fatalf("execute version: %v", err)
+	}
+
+	if runner.called {
+		t.Fatal("runner was called")
+	}
+}
+
+type recordingRunner struct {
+	called bool
+	config config.Daemon
+	err    error
+}
+
+func (runner *recordingRunner) Run(_ context.Context, config config.Daemon) error {
+	runner.called = true
+	runner.config = config
+
+	return runner.err
 }

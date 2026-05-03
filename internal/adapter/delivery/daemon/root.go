@@ -2,12 +2,14 @@
 package daemon
 
 import (
+	"context"
 	"fmt"
 	"io"
 
 	"github.com/spf13/cobra"
 
 	"usb-quic/internal/adapter/logging"
+	"usb-quic/internal/config"
 	domainusbip "usb-quic/internal/domain/usbip"
 )
 
@@ -27,15 +29,20 @@ type rootOptions struct {
 	version bool
 }
 
+// RunFunc runs the daemon runtime.
+type RunFunc func(ctx context.Context, config config.Daemon) error
+
 // Runtime contains daemon runtime dependencies.
 type Runtime struct {
 	LogLevel *logging.LevelVar
+	Run      RunFunc
 }
 
 // NewRootCommand builds a usbipd-like daemon command.
 func NewRootCommand(stdin io.Reader, stdout, stderr io.Writer) *cobra.Command {
 	runtime := Runtime{
 		LogLevel: nil,
+		Run:      nil,
 	}
 
 	return NewRootCommandWithRuntime(stdin, stdout, stderr, runtime)
@@ -71,7 +78,7 @@ func NewRootCommandWithRuntime(stdin io.Reader, stdout, stderr io.Writer, runtim
 				return nil
 			}
 
-			return notImplemented()
+			return runDaemon(cmd, runtime, opts)
 		},
 	}
 
@@ -135,4 +142,29 @@ func notImplemented() error {
 
 func configureLogLevel(runtime Runtime, verbose bool) {
 	logging.SetVerboseLevel(runtime.LogLevel, verbose)
+}
+
+func runDaemon(cmd *cobra.Command, runtime Runtime, opts rootOptions) error {
+	if runtime.Run == nil {
+		return notImplemented()
+	}
+
+	err := runtime.Run(cmd.Context(), configFromOptions(opts))
+	if err != nil {
+		return fmt.Errorf("%s: %w", appName, err)
+	}
+
+	return nil
+}
+
+func configFromOptions(opts rootOptions) config.Daemon {
+	return config.Daemon{
+		BindIPv4:   opts.ipv4,
+		BindIPv6:   opts.ipv6,
+		DeviceMode: opts.device,
+		Daemonize:  opts.daemon,
+		Debug:      opts.debug,
+		PIDFile:    opts.pidFile,
+		TCPPort:    opts.tcpPort,
+	}
 }
