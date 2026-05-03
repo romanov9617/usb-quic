@@ -15,6 +15,7 @@ import (
 	"usb-quic/internal/adapter/delivery/daemon"
 	"usb-quic/internal/adapter/logging"
 	"usb-quic/internal/config"
+	runtimedaemon "usb-quic/internal/daemon"
 )
 
 // Streams contains process streams used by commands.
@@ -76,6 +77,7 @@ func execute(
 		fx.NopLogger,
 		fx.Supply(streams),
 		fx.Provide(newLogLevel),
+		fx.Provide(newLogger),
 		fx.Provide(newDaemonRun),
 		fx.Provide(commandProvider),
 		fx.Populate(&command),
@@ -100,6 +102,10 @@ func newLogLevel() *logging.LevelVar {
 	return logging.NewVerboseLevel(false)
 }
 
+func newLogger(streams Streams, level *logging.LevelVar) *logging.Logger {
+	return logging.NewTextLogger(streams.Stderr, level)
+}
+
 func newRootCommand(streams Streams, level *logging.LevelVar) *cobra.Command {
 	runtime := cli.Runtime{
 		LogLevel: level,
@@ -113,9 +119,9 @@ func newRootCommand(streams Streams, level *logging.LevelVar) *cobra.Command {
 	)
 }
 
-func newDaemonRun() daemon.RunFunc {
-	return func(_ context.Context, _ config.Daemon) error {
-		return daemon.ErrNotImplemented
+func newDaemonRun(logger *logging.Logger) daemon.RunFunc {
+	return func(ctx context.Context, cfg config.Daemon) error {
+		return runtimedaemon.Run(ctx, cfg, logger)
 	}
 }
 
