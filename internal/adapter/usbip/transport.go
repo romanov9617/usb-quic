@@ -133,7 +133,12 @@ func (transport *Transport) ProxyQUICToTCP(ctx context.Context, quicAddress, tcp
 func (transport *Transport) proxyTCPConnectionToQUIC(ctx context.Context, tcpConn net.Conn, quicAddress url.URL) {
 	defer closeTCPConnection(tcpConn)
 
-	conn, err := quic.DialAddr(ctx, quicAddress.Host, transport.tlsConfig, transport.quicConfig)
+	conn, err := quic.DialAddr(
+		ctx,
+		quicAddress.Host,
+		transport.tlsConfig,
+		transport.quicConfig,
+	)
 	if err != nil {
 		transport.logger.Error(
 			"dial usbip quic",
