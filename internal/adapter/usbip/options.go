@@ -9,9 +9,6 @@ import (
 	"usb-quic/internal/adapter/logging"
 )
 
-// DefaultPort is the IANA-assigned USB/IP TCP port.
-const DefaultPort = 3240
-
 const defaultDialTimeout = 5 * time.Second
 
 // Option configures Transport.

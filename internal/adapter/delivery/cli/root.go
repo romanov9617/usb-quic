@@ -5,18 +5,19 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net"
-	"strconv"
+	"net/url"
 
 	"github.com/spf13/cobra"
 
 	"usb-quic/internal/adapter/logging"
-	"usb-quic/internal/adapter/usbip"
+	domainusbip "usb-quic/internal/domain/usbip"
 )
 
 const (
 	appName        = "usb-quic"
 	defaultTCPPort = 3240
+	localTCPHost   = "127.0.0.1"
+	portCommand    = "port"
 )
 
 // version is injected by build flags. The fallback is used for local builds.
@@ -41,8 +42,8 @@ const (
 
 // USBIPTransport is the USB/IP TCP transport used by CLI commands.
 type USBIPTransport interface {
-	ProxyTCPToQUIC(ctx context.Context, tcpAddress, quicAddress string) error
-	ProxyQUICToTCP(ctx context.Context, quicAddress, tcpAddress string) error
+	ProxyTCPToQUIC(ctx context.Context, tcpAddress, quicAddress url.URL) error
+	ProxyQUICToTCP(ctx context.Context, quicAddress, tcpAddress url.URL) error
 }
 
 // Runtime contains CLI runtime dependencies.
@@ -69,7 +70,7 @@ func NewRootCommandWithRuntime(stdin io.Reader, stdout, stderr io.Writer, runtim
 		debug:   false,
 		log:     false,
 		verbose: false,
-		tcpPort: usbip.DefaultPort,
+		tcpPort: domainusbip.DefaultPort,
 	}
 
 	//nolint:exhaustruct // Cobra commands intentionally set only behavior relevant to this CLI.
@@ -145,8 +146,16 @@ func listenUSBIP(cmd *cobra.Command, runtime Runtime, port int) error {
 		ctx = context.Background()
 	}
 
-	quicAddress := net.JoinHostPort("", strconv.Itoa(port))
-	tcpAddress := net.JoinHostPort("127.0.0.1", strconv.Itoa(port))
+	quicEndpoint := domainusbip.Endpoint{
+		Host: "",
+		Port: port,
+	}
+	quicAddress := quicEndpoint.Address()
+	tcpEndpoint := domainusbip.Endpoint{
+		Host: localTCPHost,
+		Port: port,
+	}
+	tcpAddress := tcpEndpoint.TCPAddress()
 
 	err := runtime.USBIPTransport.ProxyQUICToTCP(ctx, quicAddress, tcpAddress)
 	if err != nil {

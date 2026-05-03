@@ -2,12 +2,10 @@ package cli
 
 import (
 	"fmt"
-	"net"
-	"strconv"
 
 	"github.com/spf13/cobra"
 
-	"usb-quic/internal/adapter/usbip"
+	domainusbip "usb-quic/internal/domain/usbip"
 )
 
 type attachOptions struct {
@@ -146,11 +144,11 @@ func newUnbindCommand() *cobra.Command {
 func newPortCommand() *cobra.Command {
 	//nolint:exhaustruct // Cobra commands intentionally set only behavior relevant to this CLI.
 	return &cobra.Command{
-		Use:   "port",
+		Use:   portCommand,
 		Short: "Show imported USB devices",
 		Args:  cobra.NoArgs,
 		RunE: func(_ *cobra.Command, _ []string) error {
-			return notImplemented("port")
+			return notImplemented(portCommand)
 		},
 	}
 }
@@ -172,13 +170,18 @@ func canDialUSBIP(runtime Runtime, remote string) bool {
 }
 
 func dialUSBIP(cmd *cobra.Command, runtime Runtime, remote string, port int) error {
-	endpoint := usbip.Endpoint{
+	endpoint := domainusbip.Endpoint{
 		Host: remote,
 		Port: port,
 	}
-	tcpAddress := net.JoinHostPort("", strconv.Itoa(port))
+	tcpEndpoint := domainusbip.Endpoint{
+		Host: "",
+		Port: port,
+	}
+	tcpAddress := tcpEndpoint.TCPAddress()
+	quicAddress := endpoint.Address()
 
-	err := runtime.USBIPTransport.ProxyTCPToQUIC(cmd.Context(), tcpAddress, endpoint.Address())
+	err := runtime.USBIPTransport.ProxyTCPToQUIC(cmd.Context(), tcpAddress, quicAddress)
 	if err != nil {
 		return fmt.Errorf("proxy usbip tcp to quic: %w", err)
 	}

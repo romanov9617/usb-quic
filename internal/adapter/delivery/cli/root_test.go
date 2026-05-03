@@ -6,6 +6,8 @@ import (
 	"testing"
 )
 
+const testBusID = "1-1"
+
 func TestRootHelpMatchesUSBIPShape(t *testing.T) {
 	t.Parallel()
 
@@ -59,13 +61,13 @@ func TestUSBIPCompatibleCommandsParse(t *testing.T) {
 		name string
 		args []string
 	}{
-		{name: "attach", args: []string{"attach", "-r", "127.0.0.1", "-b", "1-1"}},
+		{name: "attach", args: []string{"attach", "-r", localTCPHost, "-b", testBusID}},
 		{name: "detach", args: []string{"detach", "-p", "0"}},
 		{name: "list local", args: []string{"list", "-l"}},
-		{name: "list remote", args: []string{"list", "-r", "127.0.0.1"}},
-		{name: "bind", args: []string{"bind", "-b", "1-1"}},
-		{name: "unbind", args: []string{"unbind", "-b", "1-1"}},
-		{name: "port", args: []string{"port"}},
+		{name: "list remote", args: []string{"list", "-r", localTCPHost}},
+		{name: "bind", args: []string{"bind", "-b", testBusID}},
+		{name: "unbind", args: []string{"unbind", "-b", testBusID}},
+		{name: portCommand, args: []string{portCommand}},
 	}
 
 	for _, tt := range tests {

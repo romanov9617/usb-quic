@@ -3,49 +3,22 @@ package usbip
 
 import (
 	"context"
-	"crypto/rand"
-	"crypto/rsa"
 	"crypto/tls"
-	"crypto/x509"
-	"crypto/x509/pkix"
-	"encoding/pem"
 	"errors"
 	"fmt"
 	"io"
 	"log/slog"
-	"math/big"
 	"net"
-	"strconv"
+	"net/url"
 	"sync"
 	"time"
 
-	"github.com/quic-go/quic-go"
-
 	"usb-quic/internal/adapter/logging"
+
+	"github.com/quic-go/quic-go"
 )
 
-const quicALPN = "usb-quic"
-
-const (
-	proxyDirections        = 2
-	tlsPrivateKeyBits      = 2048
-	tlsSerialNumberBits    = 128
-	tlsCertificateLifetime = 24 * time.Hour
-)
-
-// Endpoint identifies a USB/IP TCP endpoint.
-type Endpoint struct {
-	Host string
-	Port int
-}
-
-// Address returns the network address for endpoint.
-func (endpoint Endpoint) Address() string {
-	return net.JoinHostPort(
-		endpoint.Host,
-		strconv.Itoa(endpoint.Port),
-	)
-}
+const proxyDirections = 2
 
 // Transport proxies USB/IP TCP byte streams over QUIC streams.
 type Transport struct {
@@ -60,8 +33,8 @@ func NewTransport(options ...Option) *Transport {
 	transport := &Transport{
 		dialTimeout: defaultDialTimeout,
 		logger:      logging.NewDefaultLogger(io.Discard),
-		tlsConfig:   newClientTLSConfig(),
-		quicConfig:  newQUICConfig(),
+		tlsConfig:   QUICClientTLS(),
+		quicConfig:  QUICConfig(),
 	}
 
 	for _, option := range options {
@@ -72,17 +45,17 @@ func NewTransport(options ...Option) *Transport {
 }
 
 // ProxyTCPToQUIC listens for TCP connections and proxies each one into a QUIC stream.
-func (transport *Transport) ProxyTCPToQUIC(ctx context.Context, tcpAddress, quicAddress string) error {
+func (transport *Transport) ProxyTCPToQUIC(ctx context.Context, tcpAddress, quicAddress url.URL) error {
 	//nolint:exhaustruct // Zero-value ListenConfig uses Go's default TCP listener behavior.
 	listenConfig := net.ListenConfig{}
 
 	listener, err := listenConfig.Listen(
 		ctx,
 		"tcp",
-		tcpAddress,
+		tcpAddress.Host,
 	)
 	if err != nil {
-		return fmt.Errorf("listen usbip tcp %s: %w", tcpAddress, err)
+		return fmt.Errorf("listen usbip tcp %s: %w", tcpAddress.String(), err)
 	}
 
 	defer func() {
@@ -92,7 +65,7 @@ func (transport *Transport) ProxyTCPToQUIC(ctx context.Context, tcpAddress, quic
 	transport.logger.Info(
 		"usbip tcp to quic proxy started",
 		slog.String("address", listener.Addr().String()),
-		slog.String("quic_address", quicAddress),
+		slog.String("quic_address", quicAddress.String()),
 	)
 
 	go closeListenerOnCancel(ctx, listener)
@@ -117,15 +90,15 @@ func (transport *Transport) ProxyTCPToQUIC(ctx context.Context, tcpAddress, quic
 }
 
 // ProxyQUICToTCP listens for QUIC streams and proxies each one into a TCP connection.
-func (transport *Transport) ProxyQUICToTCP(ctx context.Context, quicAddress, tcpAddress string) error {
-	tlsConfig, err := newServerTLSConfig()
+func (transport *Transport) ProxyQUICToTCP(ctx context.Context, quicAddress, tcpAddress url.URL) error {
+	tlsConfig, err := QUICServerTLS()
 	if err != nil {
 		return fmt.Errorf("build quic server tls config: %w", err)
 	}
 
-	listener, err := quic.ListenAddr(quicAddress, tlsConfig, transport.quicConfig)
+	listener, err := quic.ListenAddr(quicAddress.Host, tlsConfig, transport.quicConfig)
 	if err != nil {
-		return fmt.Errorf("listen usbip quic %s: %w", quicAddress, err)
+		return fmt.Errorf("listen usbip quic %s: %w", quicAddress.String(), err)
 	}
 
 	defer func() {
@@ -135,7 +108,7 @@ func (transport *Transport) ProxyQUICToTCP(ctx context.Context, quicAddress, tcp
 	transport.logger.Info(
 		"usbip quic to tcp proxy started",
 		slog.String("address", listener.Addr().String()),
-		slog.String("tcp_address", tcpAddress),
+		slog.String("tcp_address", tcpAddress.String()),
 	)
 
 	for {
@@ -157,14 +130,14 @@ func (transport *Transport) ProxyQUICToTCP(ctx context.Context, quicAddress, tcp
 	}
 }
 
-func (transport *Transport) proxyTCPConnectionToQUIC(ctx context.Context, tcpConn net.Conn, quicAddress string) {
+func (transport *Transport) proxyTCPConnectionToQUIC(ctx context.Context, tcpConn net.Conn, quicAddress url.URL) {
 	defer closeTCPConnection(tcpConn)
 
-	conn, err := quic.DialAddr(ctx, quicAddress, transport.tlsConfig, transport.quicConfig)
+	conn, err := quic.DialAddr(ctx, quicAddress.Host, transport.tlsConfig, transport.quicConfig)
 	if err != nil {
 		transport.logger.Error(
 			"dial usbip quic",
-			slog.String("address", quicAddress),
+			slog.String("address", quicAddress.String()),
 			slog.Any("error", err),
 		)
 
@@ -202,7 +175,7 @@ func closeListenerOnCancel(ctx context.Context, listener net.Listener) {
 	_ = listener.Close()
 }
 
-func (transport *Transport) proxyQUICConnectionToTCP(ctx context.Context, quicConn *quic.Conn, tcpAddress string) {
+func (transport *Transport) proxyQUICConnectionToTCP(ctx context.Context, quicConn *quic.Conn, tcpAddress url.URL) {
 	defer func() {
 		_ = quicConn.CloseWithError(0, "")
 	}()
@@ -228,7 +201,7 @@ func (transport *Transport) proxyQUICConnectionToTCP(ctx context.Context, quicCo
 	}
 }
 
-func (transport *Transport) proxyQUICStreamToTCP(ctx context.Context, stream *quic.Stream, tcpAddress string) {
+func (transport *Transport) proxyQUICStreamToTCP(ctx context.Context, stream *quic.Stream, tcpAddress url.URL) {
 	defer closeQUICStream(stream)
 
 	//nolint:exhaustruct // Only Timeout differs from net.Dialer defaults.
@@ -236,11 +209,11 @@ func (transport *Transport) proxyQUICStreamToTCP(ctx context.Context, stream *qu
 		Timeout: transport.dialTimeout,
 	}
 
-	conn, err := dialer.DialContext(ctx, "tcp", tcpAddress)
+	conn, err := dialer.DialContext(ctx, "tcp", tcpAddress.Host)
 	if err != nil {
 		transport.logger.Error(
 			"dial usbip tcp backend",
-			slog.String("address", tcpAddress),
+			slog.String("address", tcpAddress.String()),
 			slog.Any("error", err),
 		)
 
@@ -277,7 +250,12 @@ func proxyBidirectional(tcpConn net.Conn, stream *quic.Stream) error {
 	return nil
 }
 
-func copyAndClose(wg *sync.WaitGroup, errs chan<- error, writer io.Writer, reader io.Reader) {
+func copyAndClose(
+	wg *sync.WaitGroup,
+	errs chan<- error,
+	writer io.Writer,
+	reader io.Reader,
+) {
 	defer wg.Done()
 
 	_, err := io.Copy(writer, reader)
@@ -310,75 +288,4 @@ func closeQUICStream(stream *quic.Stream) {
 
 func isExpectedCopyError(err error) bool {
 	return errors.Is(err, net.ErrClosed) || errors.Is(err, io.EOF)
-}
-
-func newClientTLSConfig() *tls.Config {
-	//nolint:exhaustruct // Only QUIC ALPN and development certificate verification policy differ from defaults.
-	return &tls.Config{
-		NextProtos:         []string{quicALPN},
-		InsecureSkipVerify: true, //nolint:gosec // Local development proxy uses ephemeral self-signed QUIC certificates.
-	}
-}
-
-func newServerTLSConfig() (*tls.Config, error) {
-	key, err := rsa.GenerateKey(rand.Reader, tlsPrivateKeyBits)
-	if err != nil {
-		return nil, fmt.Errorf("generate tls key: %w", err)
-	}
-
-	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), tlsSerialNumberBits)
-
-	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
-	if err != nil {
-		return nil, fmt.Errorf("generate tls serial number: %w", err)
-	}
-
-	now := time.Now()
-	//nolint:exhaustruct // Self-signed development certificate only needs fields used by TLS handshake.
-	template := x509.Certificate{
-		SerialNumber: serialNumber,
-		//nolint:exhaustruct // CommonName is sufficient for this self-signed development certificate.
-		Subject: pkix.Name{
-			CommonName: "usb-quic",
-		},
-		NotBefore:             now.Add(-time.Hour),
-		NotAfter:              now.Add(tlsCertificateLifetime),
-		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
-		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
-		BasicConstraintsValid: true,
-	}
-
-	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &key.PublicKey, key)
-	if err != nil {
-		return nil, fmt.Errorf("create tls certificate: %w", err)
-	}
-
-	//nolint:exhaustruct // PEM certificate block does not require headers.
-	certPEM := pem.EncodeToMemory(&pem.Block{
-		Type:  "CERTIFICATE",
-		Bytes: derBytes,
-	})
-	//nolint:exhaustruct // PEM key block does not require headers.
-	keyPEM := pem.EncodeToMemory(&pem.Block{
-		Type:  "RSA PRIVATE KEY",
-		Bytes: x509.MarshalPKCS1PrivateKey(key),
-	})
-
-	cert, err := tls.X509KeyPair(certPEM, keyPEM)
-	if err != nil {
-		return nil, fmt.Errorf("load tls key pair: %w", err)
-	}
-
-	//nolint:exhaustruct // Only certificate and QUIC ALPN differ from TLS defaults.
-	return &tls.Config{
-		Certificates: []tls.Certificate{cert},
-		NextProtos:   []string{quicALPN},
-	}, nil
-}
-
-func newQUICConfig() *quic.Config {
-	//nolint:exhaustruct // Only datagram support is explicitly controlled for byte-stream proxying.
-	return &quic.Config{
-		EnableDatagrams: false,
-	}
 }
