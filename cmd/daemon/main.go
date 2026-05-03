@@ -5,11 +5,11 @@ import (
 	"os"
 
 	"usb-quic/internal/adapter/logging"
-	"usb-quic/internal/app"
+	"usb-quic/internal/di"
 )
 
 func main() {
-	err := app.ExecuteDaemon(os.Stdin, os.Stdout, os.Stderr)
+	err := di.ExecuteDaemon(os.Stdin, os.Stdout, os.Stderr)
 	if err != nil {
 		logging.NewDefaultLogger(os.Stderr).Error("daemon failed", "error", err)
 		os.Exit(1)
