@@ -1,8 +1,9 @@
-BINARIES := server client
+BINARIES := usb-quic daemon
 DIST_DIR := dist
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
-VERSION_VAR := usb-quic/internal/adapter/delivery/cli.version
-LDFLAGS := -s -w -X $(VERSION_VAR)=$(VERSION)
+CLI_VERSION_VAR := usb-quic/internal/adapter/delivery/cli.version
+DAEMON_VERSION_VAR := usb-quic/internal/adapter/delivery/daemon.version
+LDFLAGS := -s -w -X $(CLI_VERSION_VAR)=$(VERSION) -X $(DAEMON_VERSION_VAR)=$(VERSION)
 
 .PHONY: help build test bench stats clean
 

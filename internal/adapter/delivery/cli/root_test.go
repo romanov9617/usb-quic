@@ -30,7 +30,7 @@ func TestRootHelpMatchesUSBIPShape(t *testing.T) {
 		t.Fatalf("execute help: %v", err)
 	}
 
-	want := `usage: usbip [--debug] [--log] [--tcp-port PORT] [version]
+	want := `usage: usb-quic [--debug] [--log] [--tcp-port PORT] [version]
              [help] <command> <args>
 
   attach     Attach a remote USB device
@@ -108,7 +108,7 @@ func TestUSBIPCompatibleSubcommandHelp(t *testing.T) {
 		{
 			name: attachCommand,
 			args: []string{attachCommand, helpFlag},
-			want: `usage: usbip attach <args>
+			want: `usage: usb-quic attach <args>
     -r, --remote=<host>      The machine with exported USB devices
     -b, --busid=<busid>    Busid of the device on <host>
     -d, --device=<devid>    Id of the virtual UDC on <host>
@@ -117,7 +117,7 @@ func TestUSBIPCompatibleSubcommandHelp(t *testing.T) {
 		{
 			name: listCommand,
 			args: []string{listCommand, helpFlag},
-			want: `usage: usbip list [-p|--parsable] <args>
+			want: `usage: usb-quic list [-p|--parsable] <args>
     -p, --parsable         Parsable list format
     -r, --remote=<host>    List the exportable USB devices on <host>
     -l, --local            List the local USB devices
@@ -127,21 +127,21 @@ func TestUSBIPCompatibleSubcommandHelp(t *testing.T) {
 		{
 			name: detachCommand,
 			args: []string{detachCommand, helpFlag},
-			want: `usage: usbip detach <args>
+			want: `usage: usb-quic detach <args>
     -p, --port=<port>    vhci_hcd port the device is on
 `,
 		},
 		{
 			name: bindCommand,
 			args: []string{bindCommand, helpFlag},
-			want: `usage: usbip bind <args>
+			want: `usage: usb-quic bind <args>
     -b, --busid=<busid>    Bind usbip-host.ko to device on <busid>
 `,
 		},
 		{
 			name: unbindCommand,
 			args: []string{unbindCommand, helpFlag},
-			want: `usage: usbip unbind <args>
+			want: `usage: usb-quic unbind <args>
     -b, --busid=<busid>    Unbind usbip-host.ko from device on <busid>
 `,
 		},
