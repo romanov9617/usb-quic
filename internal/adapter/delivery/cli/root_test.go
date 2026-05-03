@@ -6,6 +6,17 @@ import (
 	"testing"
 )
 
+const testBusID = "1-1"
+
+const (
+	attachCommand = "attach"
+	bindCommand   = "bind"
+	detachCommand = "detach"
+	helpFlag      = "--help"
+	listCommand   = "list"
+	unbindCommand = "unbind"
+)
+
 func TestRootHelpMatchesUSBIPShape(t *testing.T) {
 	t.Parallel()
 
@@ -19,7 +30,8 @@ func TestRootHelpMatchesUSBIPShape(t *testing.T) {
 		t.Fatalf("execute help: %v", err)
 	}
 
-	want := `usage: usb-quic [--debug] [--log] [--tcp-port PORT] [version] [help] <command> <args>
+	want := `usage: usbip [--debug] [--log] [--tcp-port PORT] [version]
+             [help] <command> <args>
 
   attach     Attach a remote USB device
   detach     Detach a remote USB device
@@ -59,13 +71,15 @@ func TestUSBIPCompatibleCommandsParse(t *testing.T) {
 		name string
 		args []string
 	}{
-		{name: "attach", args: []string{"attach", "-r", "127.0.0.1", "-b", "1-1"}},
-		{name: "detach", args: []string{"detach", "-p", "0"}},
-		{name: "list local", args: []string{"list", "-l"}},
-		{name: "list remote", args: []string{"list", "-r", "127.0.0.1"}},
-		{name: "bind", args: []string{"bind", "-b", "1-1"}},
-		{name: "unbind", args: []string{"unbind", "-b", "1-1"}},
-		{name: "port", args: []string{"port"}},
+		{name: attachCommand, args: []string{attachCommand, "-r", localTCPHost, "-b", testBusID}},
+		{name: "attach device", args: []string{attachCommand, "-r", localTCPHost, "-d", "0"}},
+		{name: detachCommand, args: []string{detachCommand, "-p", "0"}},
+		{name: "list local", args: []string{listCommand, "-l"}},
+		{name: "list remote", args: []string{listCommand, "-r", localTCPHost}},
+		{name: "list device", args: []string{listCommand, "-d"}},
+		{name: bindCommand, args: []string{bindCommand, "-b", testBusID}},
+		{name: unbindCommand, args: []string{unbindCommand, "-b", testBusID}},
+		{name: portCommand, args: []string{portCommand}},
 	}
 
 	for _, tt := range tests {
@@ -78,6 +92,77 @@ func TestUSBIPCompatibleCommandsParse(t *testing.T) {
 			err := cmd.Execute()
 			if !errors.Is(err, ErrNotImplemented) {
 				t.Fatalf("expected ErrNotImplemented, got %v", err)
+			}
+		})
+	}
+}
+
+func TestUSBIPCompatibleSubcommandHelp(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		args []string
+		want string
+	}{
+		{
+			name: attachCommand,
+			args: []string{attachCommand, helpFlag},
+			want: `usage: usbip attach <args>
+    -r, --remote=<host>      The machine with exported USB devices
+    -b, --busid=<busid>    Busid of the device on <host>
+    -d, --device=<devid>    Id of the virtual UDC on <host>
+`,
+		},
+		{
+			name: listCommand,
+			args: []string{listCommand, helpFlag},
+			want: `usage: usbip list [-p|--parsable] <args>
+    -p, --parsable         Parsable list format
+    -r, --remote=<host>    List the exportable USB devices on <host>
+    -l, --local            List the local USB devices
+    -d, --device           List the local USB gadgets bound to usbip-vudc
+`,
+		},
+		{
+			name: detachCommand,
+			args: []string{detachCommand, helpFlag},
+			want: `usage: usbip detach <args>
+    -p, --port=<port>    vhci_hcd port the device is on
+`,
+		},
+		{
+			name: bindCommand,
+			args: []string{bindCommand, helpFlag},
+			want: `usage: usbip bind <args>
+    -b, --busid=<busid>    Bind usbip-host.ko to device on <busid>
+`,
+		},
+		{
+			name: unbindCommand,
+			args: []string{unbindCommand, helpFlag},
+			want: `usage: usbip unbind <args>
+    -b, --busid=<busid>    Unbind usbip-host.ko from device on <busid>
+`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			var stdout bytes.Buffer
+
+			cmd := NewRootCommand(nil, &stdout, nil)
+			cmd.SetArgs(tt.args)
+
+			err := cmd.Execute()
+			if err != nil {
+				t.Fatalf("execute help: %v", err)
+			}
+
+			if got := stdout.String(); got != tt.want {
+				t.Fatalf("unexpected help\nwant:\n%s\ngot:\n%s", tt.want, got)
 			}
 		})
 	}

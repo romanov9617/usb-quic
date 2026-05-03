@@ -2,16 +2,16 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
+	"usb-quic/internal/adapter/logging"
 	"usb-quic/internal/app"
 )
 
 func main() {
-	err := app.ExecuteCLI(os.Stdin, os.Stdout, os.Stderr)
+	err := app.ExecuteCLI(app.RoleClient, os.Stdin, os.Stdout, os.Stderr)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		logging.NewDefaultLogger(os.Stderr).Error("command failed", "error", err)
 		os.Exit(1)
 	}
 }

@@ -6,11 +6,16 @@ import (
 	"io"
 
 	"github.com/spf13/cobra"
+
+	"usb-quic/internal/adapter/logging"
+	domainusbip "usb-quic/internal/domain/usbip"
 )
 
 const (
-	appName        = "usb-quic"
+	appName        = "usbip"
 	defaultTCPPort = 3240
+	localTCPHost   = "127.0.0.1"
+	portCommand    = "port"
 )
 
 // version is injected by build flags. The fallback is used for local builds.
@@ -22,22 +27,55 @@ type rootOptions struct {
 	tcpPort int
 }
 
+// Role identifies CLI role-specific behavior.
+type Role string
+
+const (
+	// RoleClient enables outgoing USB/IP client commands.
+	RoleClient Role = "client"
+	// RoleServer enables incoming USB/IP server listener.
+	RoleServer Role = "server"
+)
+
+// Runtime contains CLI runtime dependencies.
+type Runtime struct {
+	Role     Role
+	LogLevel *logging.LevelVar
+}
+
 // NewRootCommand builds a cobra command tree compatible with the usbip CLI shape.
 func NewRootCommand(stdin io.Reader, stdout, stderr io.Writer) *cobra.Command {
+	runtime := Runtime{
+		Role:     "",
+		LogLevel: nil,
+	}
+
+	return NewRootCommandWithRuntime(stdin, stdout, stderr, runtime)
+}
+
+// NewRootCommandWithRuntime builds a cobra command tree with runtime dependencies.
+func NewRootCommandWithRuntime(stdin io.Reader, stdout, stderr io.Writer, runtime Runtime) *cobra.Command {
 	opts := rootOptions{
 		debug:   false,
 		log:     false,
-		tcpPort: 0,
+		tcpPort: domainusbip.DefaultPort,
 	}
 
 	//nolint:exhaustruct // Cobra commands intentionally set only behavior relevant to this CLI.
 	cmd := &cobra.Command{
-		Use:           appName + " [--debug] [--log] [--tcp-port PORT] [version] [help] <command> <args>",
+		Use:           appName + " [--debug] [--log] [--tcp-port PORT] [version]\n             [help] <command> <args>",
 		Short:         "USB/IP-compatible CLI over QUIC",
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		Args:          cobra.NoArgs,
+		PersistentPreRun: func(_ *cobra.Command, _ []string) {
+			configureLogLevel(runtime, opts.debug)
+		},
 		RunE: func(cmd *cobra.Command, _ []string) error {
+			if runtime.Role == RoleServer {
+				return listenUSBIP(cmd, runtime, opts.tcpPort)
+			}
+
 			return cmd.Help()
 		},
 	}
@@ -53,9 +91,9 @@ func NewRootCommand(stdin io.Reader, stdout, stderr io.Writer) *cobra.Command {
 	cmd.PersistentFlags().IntVar(&opts.tcpPort, "tcp-port", defaultTCPPort, "TCP port used by usbip-compatible endpoints")
 
 	cmd.AddCommand(
-		newAttachCommand(),
+		newAttachCommand(runtime, &opts),
 		newDetachCommand(),
-		newListCommand(),
+		newListCommand(runtime, &opts),
 		newBindCommand(),
 		newUnbindCommand(),
 		newPortCommand(),
@@ -79,4 +117,16 @@ func rootHelpTemplate() string {
 
 func notImplemented(name string) error {
 	return fmt.Errorf("%s: %w", name, ErrNotImplemented)
+}
+
+func configureLogLevel(runtime Runtime, verbose bool) {
+	logging.SetVerboseLevel(runtime.LogLevel, verbose)
+}
+
+func listenUSBIP(cmd *cobra.Command, runtime Runtime, port int) error {
+	_ = cmd
+	_ = runtime
+	_ = port
+
+	return notImplemented("listen")
 }
