@@ -77,7 +77,8 @@ The current command tree is implemented with Cobra in:
 Current root usage:
 
 ```text
-usage: usb-quic [-v] [--debug] [--log] [--tcp-port PORT] [version] [help] <command> <args>
+usage: usbip [--debug] [--log] [--tcp-port PORT] [version]
+             [help] <command> <args>
 
   attach     Attach a remote USB device
   detach     Detach a remote USB device
@@ -94,7 +95,6 @@ usage: usb-quic [-v] [--debug] [--log] [--tcp-port PORT] [version] [help] <comma
 | `--debug` | parsed | Present for `usbip` shape compatibility. |
 | `--log` | parsed | Present for `usbip` shape compatibility. |
 | `--tcp-port PORT` | parsed and used | Defaults to USB/IP port `3240`. |
-| `-v`, `--verbose` | parsed and used | Enables debug logging. This is an extension beyond the observed legacy `usbip` API. |
 
 ## Command Surface
 
@@ -102,9 +102,9 @@ usage: usb-quic [-v] [--debug] [--log] [--tcp-port PORT] [version] [help] <comma
 | --- | --- | --- | --- |
 | `version` | none | Prints build-time version, or `dev` in local builds. | Partial: output format does not match `usbip (usbip-utils 2.0)`. |
 | `help` | none | Prints root help. | Mostly compatible at root level. |
-| `attach` | `-r, --remote HOST`; `-b, --busid BUSID` | Returns `ErrNotImplemented`. `busid` is parsed but not used. | Not implemented. |
+| `attach` | `-r, --remote HOST`; `-b, --busid BUSID`; `-d, --device DEVID` | Returns `ErrNotImplemented`. Flags are parsed but not implemented. | Interface shape matches the observed legacy flags; behavior is not implemented. |
 | `detach` | `-p, --port PORT` | Returns `ErrNotImplemented`. | Not implemented. |
-| `list` | `-l, --local`; `-r, --remote HOST`; `-p, --parsable` | Returns `ErrNotImplemented`. `--local`, `--remote`, and `--parsable` are parsed but not implemented. | Not implemented. |
+| `list` | `-p, --parsable`; `-r, --remote HOST`; `-l, --local`; `-d, --device` | Returns `ErrNotImplemented`. Flags are parsed but not implemented. | Interface shape matches the observed legacy flags; behavior is not implemented. |
 | `bind` | `-b, --busid BUSID` | Returns `ErrNotImplemented`. | Not implemented. |
 | `unbind` | `-b, --busid BUSID` | Returns `ErrNotImplemented`. | Not implemented. |
 | `port` | none | Returns `ErrNotImplemented`. | Not implemented. |
@@ -159,13 +159,10 @@ usage: usbip unbind <args>
 
 ## Current Compatibility Gaps
 
-- `attach` is missing `-d, --device`.
-- `list` is missing `-d, --device`.
-- `attach` does not require or use `--busid`.
+- `attach` does not require or use `--busid` / `--device` yet.
 - `attach` is only a CLI stub and does not perform legacy attach behavior.
 - `list -r` is only a CLI stub and does not print remote exportable devices.
-- `list -l`, `list -p`, `detach`, `bind`, `unbind`, and `port` are not implemented.
-- Subcommand help currently uses the root help template instead of legacy-style subcommand usage.
+- `list -l`, `list -p`, `list -d`, `detach`, `bind`, `unbind`, and `port` are not implemented.
 - The CLI has separate client and server roles, while legacy `usbip` exposes one operator-facing command.
 - Server role returns `listen: command is not implemented yet` when invoked without a command.
 - QUIC transport and TLS configuration are not implemented in the current codebase.

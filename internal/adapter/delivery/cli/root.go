@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	appName        = "usb-quic"
+	appName        = "usbip"
 	defaultTCPPort = 3240
 	localTCPHost   = "127.0.0.1"
 	portCommand    = "port"
@@ -24,7 +24,6 @@ var version = "dev"
 type rootOptions struct {
 	debug   bool
 	log     bool
-	verbose bool
 	tcpPort int
 }
 
@@ -59,19 +58,18 @@ func NewRootCommandWithRuntime(stdin io.Reader, stdout, stderr io.Writer, runtim
 	opts := rootOptions{
 		debug:   false,
 		log:     false,
-		verbose: false,
 		tcpPort: domainusbip.DefaultPort,
 	}
 
 	//nolint:exhaustruct // Cobra commands intentionally set only behavior relevant to this CLI.
 	cmd := &cobra.Command{
-		Use:           appName + " [-v] [--debug] [--log] [--tcp-port PORT] [version] [help] <command> <args>",
+		Use:           appName + " [--debug] [--log] [--tcp-port PORT] [version]\n             [help] <command> <args>",
 		Short:         "USB/IP-compatible CLI over QUIC",
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		Args:          cobra.NoArgs,
 		PersistentPreRun: func(_ *cobra.Command, _ []string) {
-			configureLogLevel(runtime, opts.verbose)
+			configureLogLevel(runtime, opts.debug)
 		},
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if runtime.Role == RoleServer {
@@ -88,7 +86,6 @@ func NewRootCommandWithRuntime(stdin io.Reader, stdout, stderr io.Writer, runtim
 	cmd.SetHelpTemplate(rootHelpTemplate())
 	cmd.SetUsageTemplate(rootHelpTemplate())
 
-	cmd.PersistentFlags().BoolVarP(&opts.verbose, "verbose", "v", false, "enable debug logging")
 	cmd.PersistentFlags().BoolVar(&opts.debug, "debug", false, "enable debug output")
 	cmd.PersistentFlags().BoolVar(&opts.log, "log", false, "enable logging")
 	cmd.PersistentFlags().IntVar(&opts.tcpPort, "tcp-port", defaultTCPPort, "TCP port used by usbip-compatible endpoints")

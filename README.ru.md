@@ -78,7 +78,8 @@ CLI должен следовать наблюдаемому API legacy-кома
 Текущий root usage:
 
 ```text
-usage: usb-quic [-v] [--debug] [--log] [--tcp-port PORT] [version] [help] <command> <args>
+usage: usbip [--debug] [--log] [--tcp-port PORT] [version]
+             [help] <command> <args>
 
   attach     Attach a remote USB device
   detach     Detach a remote USB device
@@ -95,7 +96,6 @@ usage: usb-quic [-v] [--debug] [--log] [--tcp-port PORT] [version] [help] <comma
 | `--debug` | парсится | Присутствует для совместимости с формой `usbip`. |
 | `--log` | парсится | Присутствует для совместимости с формой `usbip`. |
 | `--tcp-port PORT` | парсится и используется | По умолчанию USB/IP port `3240`. |
-| `-v`, `--verbose` | парсится и используется | Включает debug logging. Это расширение относительно наблюдаемого legacy API `usbip`. |
 
 ## Поверхность Команд
 
@@ -103,9 +103,9 @@ usage: usb-quic [-v] [--debug] [--log] [--tcp-port PORT] [version] [help] <comma
 | --- | --- | --- | --- |
 | `version` | нет | Печатает build-time version или `dev` в локальных сборках. | Частично: формат вывода не совпадает с `usbip (usbip-utils 2.0)`. |
 | `help` | нет | Печатает root help. | В основном совместимо на root-уровне. |
-| `attach` | `-r, --remote HOST`; `-b, --busid BUSID` | Возвращает `ErrNotImplemented`. `busid` парсится, но не используется. | Не реализовано. |
+| `attach` | `-r, --remote HOST`; `-b, --busid BUSID`; `-d, --device DEVID` | Возвращает `ErrNotImplemented`. Флаги парсятся, но не реализованы. | Форма интерфейса совпадает с наблюдаемыми legacy flags; поведение не реализовано. |
 | `detach` | `-p, --port PORT` | Возвращает `ErrNotImplemented`. | Не реализовано. |
-| `list` | `-l, --local`; `-r, --remote HOST`; `-p, --parsable` | Возвращает `ErrNotImplemented`. `--local`, `--remote` и `--parsable` парсятся, но не реализованы. | Не реализовано. |
+| `list` | `-p, --parsable`; `-r, --remote HOST`; `-l, --local`; `-d, --device` | Возвращает `ErrNotImplemented`. Флаги парсятся, но не реализованы. | Форма интерфейса совпадает с наблюдаемыми legacy flags; поведение не реализовано. |
 | `bind` | `-b, --busid BUSID` | Возвращает `ErrNotImplemented`. | Не реализовано. |
 | `unbind` | `-b, --busid BUSID` | Возвращает `ErrNotImplemented`. | Не реализовано. |
 | `port` | нет | Возвращает `ErrNotImplemented`. | Не реализовано. |
@@ -160,13 +160,10 @@ usage: usbip unbind <args>
 
 ## Текущие Разрывы Совместимости
 
-- В `attach` отсутствует `-d, --device`.
-- В `list` отсутствует `-d, --device`.
-- `attach` не требует и не использует `--busid`.
+- `attach` пока не требует и не использует `--busid` / `--device`.
 - `attach` является только CLI-заглушкой и не выполняет legacy attach behavior.
 - `list -r` является только CLI-заглушкой и не выводит remote exportable devices.
-- `list -l`, `list -p`, `detach`, `bind`, `unbind` и `port` не реализованы.
-- Help подкоманд сейчас использует root help template вместо legacy-style subcommand usage.
+- `list -l`, `list -p`, `list -d`, `detach`, `bind`, `unbind` и `port` не реализованы.
 - CLI имеет отдельные client и server роли, тогда как legacy `usbip` предоставляет одну operator-facing команду.
 - Server role возвращает `listen: command is not implemented yet` при вызове без команды.
 - QUIC transport и TLS configuration в текущем коде не реализованы.
