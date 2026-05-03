@@ -13,7 +13,6 @@ import (
 
 	"usb-quic/internal/adapter/delivery/cli"
 	"usb-quic/internal/adapter/logging"
-	"usb-quic/internal/adapter/usbip"
 )
 
 // Role identifies the binary role assembled by the container.
@@ -58,8 +57,6 @@ func ExecuteCLI(role Role, stdin io.Reader, stdout, stderr io.Writer) error {
 		fx.Supply(streams),
 		fx.Supply(config),
 		fx.Provide(newLogLevel),
-		fx.Provide(newLogger),
-		fx.Provide(newUSBIPTransport),
 		fx.Provide(newRootCommand),
 		fx.Populate(&command),
 	)
@@ -83,24 +80,14 @@ func newLogLevel() *logging.LevelVar {
 	return logging.NewVerboseLevel(false)
 }
 
-func newLogger(streams Streams, level *logging.LevelVar) *logging.Logger {
-	return logging.NewTextLogger(streams.Stderr, level)
-}
-
-func newUSBIPTransport(logger *logging.Logger) *usbip.Transport {
-	return usbip.NewTransport(usbip.WithLogger(logger))
-}
-
 func newRootCommand(
 	streams Streams,
 	config runtimeConfig,
 	level *logging.LevelVar,
-	transport *usbip.Transport,
 ) *cobra.Command {
 	runtime := cli.Runtime{
-		Role:           cli.Role(config.Role),
-		LogLevel:       level,
-		USBIPTransport: transport,
+		Role:     cli.Role(config.Role),
+		LogLevel: level,
 	}
 
 	return cli.NewRootCommandWithRuntime(streams.Stdin, streams.Stdout, streams.Stderr, runtime)

@@ -8,7 +8,8 @@ The product goal is not only to tunnel USB/IP traffic. The CLI must become a
 practical replacement for the legacy `usbip` user workflow, suitable for use
 through a shell alias, wrapper, or drop-in binary strategy.
 
-Current status: early prototype.
+Current status: CLI compatibility scaffold. QUIC transport and TLS are not
+implemented in the current codebase.
 
 ## Compatibility Goal
 
@@ -101,9 +102,9 @@ usage: usb-quic [-v] [--debug] [--log] [--tcp-port PORT] [version] [help] <comma
 | --- | --- | --- | --- |
 | `version` | none | Prints build-time version, or `dev` in local builds. | Partial: output format does not match `usbip (usbip-utils 2.0)`. |
 | `help` | none | Prints root help. | Mostly compatible at root level. |
-| `attach` | `-r, --remote HOST`; `-b, --busid BUSID` | In client role, when `--remote` is set, starts TCP-to-QUIC proxying. `busid` is parsed but not used. | Not yet Liskov-compatible. It does not perform legacy attach semantics as a one-shot user command. |
+| `attach` | `-r, --remote HOST`; `-b, --busid BUSID` | Returns `ErrNotImplemented`. `busid` is parsed but not used. | Not implemented. |
 | `detach` | `-p, --port PORT` | Returns `ErrNotImplemented`. | Not implemented. |
-| `list` | `-l, --local`; `-r, --remote HOST`; `-p, --parsable` | In client role, when `--remote` is set, starts TCP-to-QUIC proxying. `--local` and `--parsable` are parsed but not implemented. | Not yet Liskov-compatible. It does not return a legacy device list. |
+| `list` | `-l, --local`; `-r, --remote HOST`; `-p, --parsable` | Returns `ErrNotImplemented`. `--local`, `--remote`, and `--parsable` are parsed but not implemented. | Not implemented. |
 | `bind` | `-b, --busid BUSID` | Returns `ErrNotImplemented`. | Not implemented. |
 | `unbind` | `-b, --busid BUSID` | Returns `ErrNotImplemented`. | Not implemented. |
 | `port` | none | Returns `ErrNotImplemented`. | Not implemented. |
@@ -161,12 +162,13 @@ usage: usbip unbind <args>
 - `attach` is missing `-d, --device`.
 - `list` is missing `-d, --device`.
 - `attach` does not require or use `--busid`.
-- `attach` currently starts proxying instead of behaving like a legacy attach command.
-- `list -r` currently starts proxying instead of printing remote exportable devices.
+- `attach` is only a CLI stub and does not perform legacy attach behavior.
+- `list -r` is only a CLI stub and does not print remote exportable devices.
 - `list -l`, `list -p`, `detach`, `bind`, `unbind`, and `port` are not implemented.
 - Subcommand help currently uses the root help template instead of legacy-style subcommand usage.
 - The CLI has separate client and server roles, while legacy `usbip` exposes one operator-facing command.
-- Server role starts the QUIC-to-TCP listener when invoked without a command. This is operationally useful for the prototype, but it is not part of the legacy `usbip` command API.
+- Server role returns `listen: command is not implemented yet` when invoked without a command.
+- QUIC transport and TLS configuration are not implemented in the current codebase.
 
 ## Implementation Direction
 

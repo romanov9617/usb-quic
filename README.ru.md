@@ -8,7 +8,8 @@
 практической заменой legacy workflow команды `usbip`, пригодной для
 использования через shell alias, wrapper или стратегию drop-in binary.
 
-Текущий статус: ранний прототип.
+Текущий статус: CLI-каркас совместимости. QUIC transport и TLS в текущем коде
+не реализованы.
 
 ## Цель Совместимости
 
@@ -102,9 +103,9 @@ usage: usb-quic [-v] [--debug] [--log] [--tcp-port PORT] [version] [help] <comma
 | --- | --- | --- | --- |
 | `version` | нет | Печатает build-time version или `dev` в локальных сборках. | Частично: формат вывода не совпадает с `usbip (usbip-utils 2.0)`. |
 | `help` | нет | Печатает root help. | В основном совместимо на root-уровне. |
-| `attach` | `-r, --remote HOST`; `-b, --busid BUSID` | В client role, если задан `--remote`, запускает TCP-to-QUIC proxying. `busid` парсится, но не используется. | Пока не Liskov-compatible. Команда не выполняет legacy attach semantics как одноразовая пользовательская команда. |
+| `attach` | `-r, --remote HOST`; `-b, --busid BUSID` | Возвращает `ErrNotImplemented`. `busid` парсится, но не используется. | Не реализовано. |
 | `detach` | `-p, --port PORT` | Возвращает `ErrNotImplemented`. | Не реализовано. |
-| `list` | `-l, --local`; `-r, --remote HOST`; `-p, --parsable` | В client role, если задан `--remote`, запускает TCP-to-QUIC proxying. `--local` и `--parsable` парсятся, но не реализованы. | Пока не Liskov-compatible. Команда не возвращает legacy device list. |
+| `list` | `-l, --local`; `-r, --remote HOST`; `-p, --parsable` | Возвращает `ErrNotImplemented`. `--local`, `--remote` и `--parsable` парсятся, но не реализованы. | Не реализовано. |
 | `bind` | `-b, --busid BUSID` | Возвращает `ErrNotImplemented`. | Не реализовано. |
 | `unbind` | `-b, --busid BUSID` | Возвращает `ErrNotImplemented`. | Не реализовано. |
 | `port` | нет | Возвращает `ErrNotImplemented`. | Не реализовано. |
@@ -162,12 +163,13 @@ usage: usbip unbind <args>
 - В `attach` отсутствует `-d, --device`.
 - В `list` отсутствует `-d, --device`.
 - `attach` не требует и не использует `--busid`.
-- `attach` сейчас запускает proxying вместо поведения legacy attach command.
-- `list -r` сейчас запускает proxying вместо вывода remote exportable devices.
+- `attach` является только CLI-заглушкой и не выполняет legacy attach behavior.
+- `list -r` является только CLI-заглушкой и не выводит remote exportable devices.
 - `list -l`, `list -p`, `detach`, `bind`, `unbind` и `port` не реализованы.
 - Help подкоманд сейчас использует root help template вместо legacy-style subcommand usage.
 - CLI имеет отдельные client и server роли, тогда как legacy `usbip` предоставляет одну operator-facing команду.
-- Server role запускает QUIC-to-TCP listener при вызове без команды. Это полезно для прототипа, но не является частью legacy `usbip` command API.
+- Server role возвращает `listen: command is not implemented yet` при вызове без команды.
+- QUIC transport и TLS configuration в текущем коде не реализованы.
 
 ## Направление Реализации
 

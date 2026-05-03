@@ -4,8 +4,6 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-
-	domainusbip "usb-quic/internal/domain/usbip"
 )
 
 type attachOptions struct {
@@ -39,9 +37,9 @@ func newAttachCommand(runtime Runtime, rootOpts *rootOptions) *cobra.Command {
 		Short: "Attach a remote USB device",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			if canDialUSBIP(runtime, opts.remote) {
-				return dialUSBIP(cmd, runtime, opts.remote, rootOpts.tcpPort)
-			}
+			_ = cmd
+			_ = runtime
+			_ = rootOpts
 
 			return notImplemented("attach")
 		},
@@ -86,9 +84,9 @@ func newListCommand(runtime Runtime, rootOpts *rootOptions) *cobra.Command {
 		Short: "List exportable or local USB devices",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			if canDialUSBIP(runtime, opts.remote) {
-				return dialUSBIP(cmd, runtime, opts.remote, rootOpts.tcpPort)
-			}
+			_ = cmd
+			_ = runtime
+			_ = rootOpts
 
 			return notImplemented("list")
 		},
@@ -163,28 +161,4 @@ func newVersionCommand() *cobra.Command {
 			_, _ = fmt.Fprintln(cmd.OutOrStdout(), version)
 		},
 	}
-}
-
-func canDialUSBIP(runtime Runtime, remote string) bool {
-	return runtime.Role == RoleClient && runtime.USBIPTransport != nil && remote != ""
-}
-
-func dialUSBIP(cmd *cobra.Command, runtime Runtime, remote string, port int) error {
-	endpoint := domainusbip.Endpoint{
-		Host: remote,
-		Port: port,
-	}
-	tcpEndpoint := domainusbip.Endpoint{
-		Host: "",
-		Port: port,
-	}
-	tcpAddress := tcpEndpoint.TCPAddress()
-	quicAddress := endpoint.Address()
-
-	err := runtime.USBIPTransport.ProxyTCPToQUIC(cmd.Context(), tcpAddress, quicAddress)
-	if err != nil {
-		return fmt.Errorf("proxy usbip tcp to quic: %w", err)
-	}
-
-	return nil
 }

@@ -2,10 +2,8 @@
 package cli
 
 import (
-	"context"
 	"fmt"
 	"io"
-	"net/url"
 
 	"github.com/spf13/cobra"
 
@@ -40,25 +38,17 @@ const (
 	RoleServer Role = "server"
 )
 
-// USBIPTransport is the USB/IP TCP transport used by CLI commands.
-type USBIPTransport interface {
-	ProxyTCPToQUIC(ctx context.Context, tcpAddress, quicAddress url.URL) error
-	ProxyQUICToTCP(ctx context.Context, quicAddress, tcpAddress url.URL) error
-}
-
 // Runtime contains CLI runtime dependencies.
 type Runtime struct {
-	Role           Role
-	LogLevel       *logging.LevelVar
-	USBIPTransport USBIPTransport
+	Role     Role
+	LogLevel *logging.LevelVar
 }
 
 // NewRootCommand builds a cobra command tree compatible with the usbip CLI shape.
 func NewRootCommand(stdin io.Reader, stdout, stderr io.Writer) *cobra.Command {
 	runtime := Runtime{
-		Role:           "",
-		LogLevel:       nil,
-		USBIPTransport: nil,
+		Role:     "",
+		LogLevel: nil,
 	}
 
 	return NewRootCommandWithRuntime(stdin, stdout, stderr, runtime)
@@ -137,30 +127,9 @@ func configureLogLevel(runtime Runtime, verbose bool) {
 }
 
 func listenUSBIP(cmd *cobra.Command, runtime Runtime, port int) error {
-	if runtime.USBIPTransport == nil {
-		return notImplemented("listen")
-	}
+	_ = cmd
+	_ = runtime
+	_ = port
 
-	ctx := cmd.Context()
-	if ctx == nil {
-		ctx = context.Background()
-	}
-
-	quicEndpoint := domainusbip.Endpoint{
-		Host: "",
-		Port: port,
-	}
-	quicAddress := quicEndpoint.Address()
-	tcpEndpoint := domainusbip.Endpoint{
-		Host: localTCPHost,
-		Port: port,
-	}
-	tcpAddress := tcpEndpoint.TCPAddress()
-
-	err := runtime.USBIPTransport.ProxyQUICToTCP(ctx, quicAddress, tcpAddress)
-	if err != nil {
-		return fmt.Errorf("proxy usbip quic to tcp: %w", err)
-	}
-
-	return nil
+	return notImplemented("listen")
 }
