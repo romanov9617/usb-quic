@@ -1,164 +1,181 @@
-# USB-over-QUIC
+# usb-quic
 
-## Статус проекта
+Languages: English | [Русский](README.ru.md)
 
-> ⚠️ **Важно**
->
-> Данный проект находится **на ранней, исследовательской стадии**. Все выводы, архитектурные решения и результаты экспериментов являются **предположительными**, могут быть неполными и используются исключительно в рамках **учебной, исследовательской и R&D-деятельности** (практика / ВКР).
->
-> Проект **не является production-решением** и не предназначен для промышленной эксплуатации.
+`usb-quic` is a userspace USB/IP-over-QUIC proxy project.
 
----
+The product goal is not only to tunnel USB/IP traffic. The CLI must become a
+practical replacement for the legacy `usbip` user workflow, suitable for use
+through a shell alias, wrapper, or drop-in binary strategy.
 
-## Идея проекта
+Current status: early prototype.
 
-Цель проекта — **практически исследовать ограничения классической технологии USB/IP** и на основе реальных экспериментов сформировать **гипотезу альтернативной архитектуры передачи USB-устройств поверх протокола QUIC**.
+## Compatibility Goal
 
-Фокус сделан не на теоретическом сравнении, а на:
+The project targets compatibility with stock Linux USB/IP components:
 
-* воспроизводимых экспериментах,
-* анализе поведения USB/IP в реальных сетевых условиях,
-* фиксации инженерных ограничений,
-* формировании требований к возможному будущему решению.
+- `usbip`
+- `usbipd`
+- `usbip-host`
+- `vhci-hcd`
 
----
+The edge protocol must remain plain USB/IP over local TCP. QUIC is used only
+between the client-side and server-side proxies.
 
-## Мотивация
+Target topology:
 
-Классический USB/IP был разработан для относительно стабильных и контролируемых сетей. Современные сценарии (облака, мобильные сети, VPN, NAT, динамические IP) предъявляют требования, которым USB/IP, как показали эксперименты, **структурно не соответствует**.
+```text
+[ Linux client ]
+  usbip / vhci-hcd
+        |
+        | TCP 127.0.0.1:3240
+        v
+  client-side proxy
+        |
+        | QUIC
+        v
+  server-side proxy
+        |
+        | TCP 127.0.0.1:3240
+        v
+  usbipd -> usbip-host -> physical USB device
+```
 
-Проект отвечает на вопрос:
+Core invariant:
 
-> *Почему USB/IP плохо масштабируется за пределы локальных и доверенных сетей, и какие свойства должны быть у альтернативного решения?*
+```text
+1 TCP USB/IP session = 1 QUIC stream
+```
 
----
+## CLI Compatibility Contract
 
-## Проведённые эксперименты
+The CLI should follow the observable API of the legacy `usbip` command.
 
-Все эксперименты проводились на **реальных USB/IP-соединениях** между физическими и виртуальными машинами с фиксацией логов, метрик и сетевых артефактов.
+At minimum, common user workflows should remain familiar:
 
-### 1. Отсутствие шифрования USB/IP
+- `usbip list -r HOST`
+- `usbip attach -r HOST -b BUSID`
+- `usbip detach -p PORT`
+- `usbip port`
+- `usbip list -l`
+- `usbip bind -b BUSID`
+- `usbip unbind -b BUSID`
 
-**Цель:** проверить, передаётся ли USB-трафик в зашифрованном виде.
+Any compatibility gap should be treated as either:
 
-**Наблюдение:**
+- a product defect to fix, or
+- an explicit limitation documented here.
 
-* USB/IP передаёт URB-данные поверх TCP без встроенного шифрования.
-* Трафик может быть перехвачен и проанализирован третьей стороной.
+## Current CLI API
 
-**Вывод:**
-USB/IP **не удовлетворяет базовым требованиям безопасности** при использовании в недоверенных сетях.
+The current command tree is implemented with Cobra in:
 
----
+- `internal/adapter/delivery/cli/root.go`
+- `internal/adapter/delivery/cli/commands.go`
 
-### 2. Поведение при сетевых разрывах
+Current root usage:
 
-**Цель:** исследовать устойчивость USB/IP при временной потере соединения.
+```text
+usage: usb-quic [-v] [--debug] [--log] [--tcp-port PORT] [version] [help] <command> <args>
 
-**Наблюдение:**
+  attach     Attach a remote USB device
+  detach     Detach a remote USB device
+  list       List exportable or local USB devices
+  bind       Bind device to usbip-host.ko
+  unbind     Unbind device from usbip-host.ko
+  port       Show imported USB devices
+```
 
-* кратковременный сетевой разрыв приводит к разрыву TCP-сессии;
-* USB-устройство полностью теряется на стороне клиента;
-* автоматического восстановления не происходит.
+### Global Flags
 
-**Вывод:**
-USB/IP не имеет механизма восстановления сессии или повторного подключения.
+| Flag | Current status | Notes |
+| --- | --- | --- |
+| `--debug` | parsed | Present for `usbip` shape compatibility. |
+| `--log` | parsed | Present for `usbip` shape compatibility. |
+| `--tcp-port PORT` | parsed and used | Defaults to USB/IP port `3240`. |
+| `-v`, `--verbose` | parsed and used | Enables debug logging. This is an extension beyond the observed legacy `usbip` API. |
 
----
+## Command Surface
 
-### 3. Смена IP-адреса и NAT
+| Command | Current flags | Current behavior | Compatibility status |
+| --- | --- | --- | --- |
+| `version` | none | Prints build-time version, or `dev` in local builds. | Partial: output format does not match `usbip (usbip-utils 2.0)`. |
+| `help` | none | Prints root help. | Mostly compatible at root level. |
+| `attach` | `-r, --remote HOST`; `-b, --busid BUSID` | In client role, when `--remote` is set, starts TCP-to-QUIC proxying. `busid` is parsed but not used. | Not yet Liskov-compatible. It does not perform legacy attach semantics as a one-shot user command. |
+| `detach` | `-p, --port PORT` | Returns `ErrNotImplemented`. | Not implemented. |
+| `list` | `-l, --local`; `-r, --remote HOST`; `-p, --parsable` | In client role, when `--remote` is set, starts TCP-to-QUIC proxying. `--local` and `--parsable` are parsed but not implemented. | Not yet Liskov-compatible. It does not return a legacy device list. |
+| `bind` | `-b, --busid BUSID` | Returns `ErrNotImplemented`. | Not implemented. |
+| `unbind` | `-b, --busid BUSID` | Returns `ErrNotImplemented`. | Not implemented. |
+| `port` | none | Returns `ErrNotImplemented`. | Not implemented. |
 
-**Цель:** проверить возможность продолжения работы при изменении IP-адреса одной из сторон.
+## Observed Legacy USB/IP API
 
-**Наблюдение:**
+The local system `usbip` command reports this root usage:
 
-* смена IP или переподключение через NAT полностью разрушает соединение;
-* требуется ручное переподключение и повторный экспорт устройства.
+```text
+usage: usbip [--debug] [--log] [--tcp-port PORT] [version]
+             [help] <command> <args>
 
-**Вывод:**
-USB/IP жёстко привязан к TCP-сессии и сетевому контексту.
+  attach     Attach a remote USB device
+  detach     Detach a remote USB device
+  list       List exportable or local USB devices
+  bind       Bind device to usbip-host.ko
+  unbind     Unbind device from usbip-host.ko
+  port       Show imported USB devices
+```
 
----
+Observed subcommand usage:
 
-### 4. Работа через VPN и сложные сетевые топологии
+```text
+usage: usbip attach <args>
+    -r, --remote=<host>      The machine with exported USB devices
+    -b, --busid=<busid>      Busid of the device on <host>
+    -d, --device=<devid>     Id of the virtual UDC on <host>
+```
 
-**Цель:** оценить применимость USB/IP в реальных пользовательских сетях.
+```text
+usage: usbip list [-p|--parsable] <args>
+    -p, --parsable         Parsable list format
+    -r, --remote=<host>    List the exportable USB devices on <host>
+    -l, --local            List the local USB devices
+    -d, --device           List the local USB gadgets bound to usbip-vudc
+```
 
-**Наблюдение:**
+```text
+usage: usbip detach <args>
+    -p, --port=<port>    vhci_hcd port the device is on
+```
 
-* соединение стабильно работает только в полностью контролируемых L2/L3 условиях;
-* асимметричный NAT, VPN и мобильные сети делают использование практически невозможным.
+```text
+usage: usbip bind <args>
+    -b, --busid=<busid>    Bind usbip-host.ko to device on <busid>
+```
 
-**Вывод:**
-USB/IP плохо применим для облачных и распределённых сценариев.
+```text
+usage: usbip unbind <args>
+    -b, --busid=<busid>    Unbind usbip-host.ko from device on <busid>
+```
 
----
+## Current Compatibility Gaps
 
-## Зачем нужны эти эксперименты
+- `attach` is missing `-d, --device`.
+- `list` is missing `-d, --device`.
+- `attach` does not require or use `--busid`.
+- `attach` currently starts proxying instead of behaving like a legacy attach command.
+- `list -r` currently starts proxying instead of printing remote exportable devices.
+- `list -l`, `list -p`, `detach`, `bind`, `unbind`, and `port` are not implemented.
+- Subcommand help currently uses the root help template instead of legacy-style subcommand usage.
+- The CLI has separate client and server roles, while legacy `usbip` exposes one operator-facing command.
+- Server role starts the QUIC-to-TCP listener when invoked without a command. This is operationally useful for the prototype, but it is not part of the legacy `usbip` command API.
 
-Эксперименты необходимы для:
+## Implementation Direction
 
-* практического подтверждения ограничений USB/IP;
-* формирования инженерных требований к альтернативному подходу;
-* обоснования актуальности дальнейших исследований;
-* использования результатов в отчётах, практике и ВКР.
+The next CLI design step is to separate:
 
----
+- the `usbip`-compatible command surface, and
+- proxy daemon or service control behavior.
 
-## Предлагаемая архитектура (гипотеза)
-
-> ⚠️ Архитектура ниже является **предполагаемой** и служит отправной точкой для дальнейших исследований.
-
-### Общая идея
-
-Предлагается рассмотреть архитектуру **USB-over-QUIC**, в которой:
-
-* QUIC используется как транспортный уровень;
-* USB-трафик инкапсулируется в управляемые потоки;
-* безопасность обеспечивается на уровне протокола;
-* возможна устойчивость к сетевым изменениям.
-
-### Предполагаемые компоненты
-
-* **USB Host Agent** — процесс на стороне физического USB-устройства;
-* **USB Client Agent** — процесс на стороне потребителя устройства;
-* **Broker / Relay (опционально)** — промежуточный узел для NAT traversal и маршрутизации;
-* **QUIC Transport Layer** — зашифрованный и устойчивый транспорт.
-
-### Предполагаемые свойства
-
-* встроенное шифрование (TLS 1.3);
-* потенциальная поддержка миграции соединений;
-* лучшая работа через NAT и VPN;
-* отказ от жёсткой привязки к TCP-сессии.
-
----
-
-## Предполагаемые преимущества
-
-* безопасность по умолчанию;
-* устойчивость к кратковременным сетевым сбоям;
-* возможность масштабирования;
-* лучшая совместимость с современными сетями.
-
----
-
-## Ограничения и риски
-
-* высокая сложность реализации;
-* отсутствие готовых стандартов;
-* неопределённая производительность;
-* значительные инженерные затраты;
-* возможные ограничения для high-throughput USB-устройств.
-
----
-
-## Текущее состояние
-
-Проект находится на стадии:
-
-* сбора экспериментальных данных;
-* документирования наблюдений;
-* формирования архитектурных гипотез.
-
-Дальнейшее развитие предполагает **итеративное уточнение архитектуры** на основе новых экспериментов и анализа результатов.
+The user-facing command API should preserve legacy command semantics. The proxy
+startup and QUIC transport details should be hidden behind the compatible
+workflow where possible, or exposed through clearly separate service commands
+when they cannot be hidden.
