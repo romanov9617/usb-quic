@@ -1,4 +1,4 @@
-// Command client provides a USB/IP-compatible client CLI.
+// Command usb-quic provides a USB/IP-compatible operator CLI.
 package main
 
 import (
@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	err := app.ExecuteCLI(app.RoleClient, os.Stdin, os.Stdout, os.Stderr)
+	err := app.ExecuteCLI(os.Stdin, os.Stdout, os.Stderr)
 	if err != nil {
 		logging.NewDefaultLogger(os.Stderr).Error("command failed", "error", err)
 		os.Exit(1)

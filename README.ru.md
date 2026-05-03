@@ -8,8 +8,8 @@
 практической заменой legacy workflow команды `usbip`, пригодной для
 использования через shell alias, wrapper или стратегию drop-in binary.
 
-Текущий статус: CLI-каркас совместимости. QUIC transport и TLS в текущем коде
-не реализованы.
+Текущий статус: CLI- и daemon-каркасы совместимости. QUIC transport и TLS в
+текущем коде не реализованы.
 
 ## Цель Совместимости
 
@@ -75,10 +75,12 @@ CLI должен следовать наблюдаемому API legacy-кома
 - `internal/adapter/delivery/cli/root.go`
 - `internal/adapter/delivery/cli/commands.go`
 
+Operator-facing binary собирается из `cmd/usb-quic`.
+
 Текущий root usage:
 
 ```text
-usage: usbip [--debug] [--log] [--tcp-port PORT] [version]
+usage: usb-quic [--debug] [--log] [--tcp-port PORT] [version]
              [help] <command> <args>
 
   attach     Attach a remote USB device
@@ -109,6 +111,52 @@ usage: usbip [--debug] [--log] [--tcp-port PORT] [version]
 | `bind` | `-b, --busid BUSID` | Возвращает `ErrNotImplemented`. | Не реализовано. |
 | `unbind` | `-b, --busid BUSID` | Возвращает `ErrNotImplemented`. | Не реализовано. |
 | `port` | нет | Возвращает `ErrNotImplemented`. | Не реализовано. |
+
+## Текущий Daemon API
+
+Daemon entrypoint отделен от operator CLI `usb-quic`, как в
+оригинальных USB/IP userspace tools. Он собирается из `cmd/daemon` и реализован
+в `internal/adapter/delivery/daemon`.
+
+Текущий daemon usage:
+
+```text
+usage: usbipd [options]
+
+	-4, --ipv4
+		Bind to IPv4. Default is both.
+
+	-6, --ipv6
+		Bind to IPv6. Default is both.
+
+	-e, --device
+		Run in device mode.
+		Rather than drive an attached device, create
+		a virtual UDC to bind gadgets to.
+
+	-D, --daemon
+		Run as a daemon process.
+
+	-d, --debug
+		Print debugging information.
+
+	-PFILE, --pid FILE
+		Write process id to FILE.
+		If no FILE specified, use /var/run/usbipd.pid
+
+	-tPORT, --tcp-port PORT
+		Listen on TCP/IP port PORT.
+
+	-h, --help
+		Print this help.
+
+	-v, --version
+		Show version.
+```
+
+Все daemon flags парсятся. Runtime-поведение daemon пока не реализовано, поэтому
+вызов без `--help` или `--version` возвращает `usbipd: daemon is not implemented
+yet`.
 
 ## Наблюдаемый Legacy USB/IP API
 
@@ -164,18 +212,17 @@ usage: usbip unbind <args>
 - `attach` является только CLI-заглушкой и не выполняет legacy attach behavior.
 - `list -r` является только CLI-заглушкой и не выводит remote exportable devices.
 - `list -l`, `list -p`, `list -d`, `detach`, `bind`, `unbind` и `port` не реализованы.
-- CLI имеет отдельные client и server роли, тогда как legacy `usbip` предоставляет одну operator-facing команду.
-- Server role возвращает `listen: command is not implemented yet` при вызове без команды.
+- Daemon command парсит наблюдаемые `usbipd` options, но пока не запускает service.
 - QUIC transport и TLS configuration в текущем коде не реализованы.
 
 ## Направление Реализации
 
-Следующий шаг дизайна CLI - разделить:
+Текущая структура команд разделяет:
 
-- `usbip`-совместимую пользовательскую поверхность команд, и
-- поведение proxy daemon или service control.
+- operator command surface `usb-quic`, и
+- `usbipd`-подобный daemon entrypoint.
 
 Пользовательский command API должен сохранять legacy-семантику команд. Запуск
 proxy и детали QUIC transport должны быть скрыты за совместимым workflow там,
-где это возможно, или вынесены в явно отдельные service commands там, где это
-невозможно скрыть.
+где это возможно. Daemon behavior должен находиться в отдельном daemon
+entrypoint, а не в operator-facing команде `usb-quic`.

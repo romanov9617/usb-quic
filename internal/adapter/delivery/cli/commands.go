@@ -163,7 +163,7 @@ func newPortCommand() *cobra.Command {
 }
 
 func attachHelpTemplate() string {
-	return `usage: usbip attach <args>
+	return `usage: usb-quic attach <args>
     -r, --remote=<host>      The machine with exported USB devices
     -b, --busid=<busid>    Busid of the device on <host>
     -d, --device=<devid>    Id of the virtual UDC on <host>
@@ -171,7 +171,7 @@ func attachHelpTemplate() string {
 }
 
 func listHelpTemplate() string {
-	return `usage: usbip list [-p|--parsable] <args>
+	return `usage: usb-quic list [-p|--parsable] <args>
     -p, --parsable         Parsable list format
     -r, --remote=<host>    List the exportable USB devices on <host>
     -l, --local            List the local USB devices
@@ -180,19 +180,19 @@ func listHelpTemplate() string {
 }
 
 func detachHelpTemplate() string {
-	return `usage: usbip detach <args>
+	return `usage: usb-quic detach <args>
     -p, --port=<port>    vhci_hcd port the device is on
 `
 }
 
 func bindHelpTemplate() string {
-	return `usage: usbip bind <args>
+	return `usage: usb-quic bind <args>
     -b, --busid=<busid>    Bind usbip-host.ko to device on <busid>
 `
 }
 
 func unbindHelpTemplate() string {
-	return `usage: usbip unbind <args>
+	return `usage: usb-quic unbind <args>
     -b, --busid=<busid>    Unbind usbip-host.ko from device on <busid>
 `
 }
