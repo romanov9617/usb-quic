@@ -5,6 +5,7 @@ go 1.26.2
 require (
 	github.com/spf13/cobra v1.10.2
 	go.uber.org/fx v1.24.0
+	go.uber.org/mock v0.6.0
 )
 
 require (
