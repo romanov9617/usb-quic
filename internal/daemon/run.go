@@ -4,7 +4,6 @@ package daemon
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"net"
 	"os"
 	"strconv"
@@ -23,18 +22,8 @@ func Run(ctx context.Context, cfg config.Daemon, logger *logging.Logger) error {
 }
 
 func runWithListener(ctx context.Context, cfg config.Daemon, logger *logging.Logger, listen listenFunc) error {
-	logger = normalizedLogger(logger)
-
-	logger.Info(
-		"daemon starting",
-		slog.Bool("bind_ipv4", cfg.BindIPv4),
-		slog.Bool("bind_ipv6", cfg.BindIPv6),
-		slog.Bool("device_mode", cfg.DeviceMode),
-		slog.Bool("daemonize", cfg.Daemonize),
-		slog.Bool("debug", cfg.Debug),
-		slog.String("pid_file", cfg.PIDFile),
-		slog.Int("tcp_port", cfg.TCPPort),
-	)
+	log := newLogger(logger)
+	log.logDaemonStarting(cfg)
 
 	listener, err := listen(ctx, cfg)
 	if err != nil {
@@ -50,7 +39,7 @@ func runWithListener(ctx context.Context, cfg config.Daemon, logger *logging.Log
 
 	<-ctx.Done()
 
-	logger.Info("daemon stopped", slog.Any("reason", ctx.Err()))
+	log.logDaemonStopped(ctx.Err())
 
 	return nil
 }
@@ -84,14 +73,6 @@ func listenAddress(cfg config.Daemon) string {
 
 func closeListener(listener net.Listener) {
 	_ = listener.Close()
-}
-
-func normalizedLogger(logger *logging.Logger) *logging.Logger {
-	if logger != nil {
-		return logger
-	}
-
-	return logging.NewDefaultLogger(os.Stderr)
 }
 
 func writePIDFile(path string) (func(), error) {
