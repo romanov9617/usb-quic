@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"usb-quic/internal/config"
+	"usb-quic/internal/transport"
 	"usb-quic/internal/tunnel"
 )
 
@@ -21,9 +22,9 @@ func TestHandleConnectionCopiesBytesBothDirections(t *testing.T) {
 
 	clientPeer, clientConn := newMemoryConnPair()
 	upstreamPeer, upstreamConn := newMemoryConnPair()
-	daemon := testDaemon(func(context.Context, config.Daemon) (tunnel.Endpoint, error) {
+	daemon := testDaemon(transport.OpenStreamFunc(func(context.Context) (tunnel.Endpoint, error) {
 		return upstreamConn, nil
-	})
+	}))
 	done := make(chan struct{})
 
 	go func() {
@@ -57,9 +58,9 @@ func TestHandleConnectionClosesClientOnDialError(t *testing.T) {
 	t.Parallel()
 
 	clientPeer, clientConn := newMemoryConnPair()
-	daemon := testDaemon(func(context.Context, config.Daemon) (tunnel.Endpoint, error) {
+	daemon := testDaemon(transport.OpenStreamFunc(func(context.Context) (tunnel.Endpoint, error) {
 		return nil, errBusy
-	})
+	}))
 	done := make(chan struct{})
 
 	go func() {
@@ -79,8 +80,8 @@ func TestHandleConnectionClosesClientOnDialError(t *testing.T) {
 	}
 }
 
-func testDaemon(dial dialFunc) *Daemon {
-	daemon := New(config.Daemon{
+func testDaemon(streamOpener transport.StreamOpener) *Daemon {
+	return New(config.Daemon{
 		BindIPv4:   false,
 		BindIPv6:   false,
 		DeviceMode: false,
@@ -88,10 +89,7 @@ func testDaemon(dial dialFunc) *Daemon {
 		Debug:      false,
 		PIDFile:    "",
 		TCPPort:    testTCPPort,
-	}, testLogger())
-	daemon.dial = dial
-
-	return daemon
+	}, testLogger(), WithStreamOpener(streamOpener))
 }
 
 func newMemoryConnPair() (*memoryConn, *memoryConn) {

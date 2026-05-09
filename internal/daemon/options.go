@@ -1,9 +1,14 @@
 package daemon
 
-import "net"
+import (
+	"net"
+
+	"usb-quic/internal/transport"
+)
 
 type options struct {
-	listener net.Listener
+	listener     net.Listener
+	streamOpener transport.StreamOpener
 }
 
 // Option configures Daemon.
@@ -13,5 +18,12 @@ type Option func(opts *options)
 func WithListener(listener net.Listener) Option {
 	return func(opts *options) {
 		opts.listener = listener
+	}
+}
+
+// WithStreamOpener configures Daemon to open one stream per accepted connection.
+func WithStreamOpener(streamOpener transport.StreamOpener) Option {
+	return func(opts *options) {
+		opts.streamOpener = streamOpener
 	}
 }

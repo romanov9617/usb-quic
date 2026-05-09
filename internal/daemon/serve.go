@@ -31,9 +31,9 @@ func (daemon *Daemon) handleConnection(ctx context.Context, client net.Conn) {
 		_ = client.Close()
 	}()
 
-	upstream, err := daemon.dial(ctx, daemon.cfg)
+	upstream, err := daemon.streamOpener.OpenStream(ctx)
 	if err != nil {
-		daemon.log.logUpstreamDialFailed(client.RemoteAddr(), err)
+		daemon.log.logStreamOpenFailed(client.RemoteAddr(), err)
 
 		return
 	}
@@ -43,7 +43,7 @@ func (daemon *Daemon) handleConnection(ctx context.Context, client net.Conn) {
 
 	daemon.log.logTunnelStarted(client.RemoteAddr())
 
-	err = tunnel.BidirectionalCopy(ctx, newConnEndpoint(client), upstream)
+	err = tunnel.BidirectionalCopy(ctx, tunnel.NewNetEndpoint(client), upstream)
 	if err != nil && !errors.Is(err, context.Canceled) {
 		daemon.log.logTunnelFailed(client.RemoteAddr(), err)
 

@@ -12,46 +12,46 @@ import (
 	"usb-quic/internal/adapter/logging"
 	"usb-quic/internal/config"
 	domainusbip "usb-quic/internal/domain/usbip"
-	"usb-quic/internal/tunnel"
+	"usb-quic/internal/transport"
 )
 
 const pidFileMode = 0o600
 
-type (
-	listenFunc func(ctx context.Context, cfg config.Daemon) (net.Listener, error)
-	dialFunc   func(ctx context.Context, cfg config.Daemon) (tunnel.Endpoint, error)
-)
+type listenFunc func(ctx context.Context, cfg config.Daemon) (net.Listener, error)
 
 // Daemon contains daemon runtime state and dependencies.
 type Daemon struct {
-	cfg    config.Daemon
-	log    *logger
-	listen listenFunc
-	dial   dialFunc
+	cfg          config.Daemon
+	log          *logger
+	listen       listenFunc
+	streamOpener transport.StreamOpener
 }
 
 // New creates a daemon runtime.
 func New(cfg config.Daemon, logger *logging.Logger, opts ...Option) *Daemon {
 	options := options{
-		listener: nil,
+		listener:     nil,
+		streamOpener: nil,
 	}
 	for _, opt := range opts {
 		opt(&options)
 	}
 
 	daemon := &Daemon{
-		cfg:    cfg,
-		log:    newLogger(logger),
-		listen: listen,
-		dial: func(ctx context.Context, cfg config.Daemon) (tunnel.Endpoint, error) {
-			return dialUpstream(ctx, cfg)
-		},
+		cfg:          cfg,
+		log:          newLogger(logger),
+		listen:       listen,
+		streamOpener: transport.NewTCPStreamOpener(defaultUpstreamAddress()),
 	}
 
 	if options.listener != nil {
 		daemon.listen = func(context.Context, config.Daemon) (net.Listener, error) {
 			return options.listener, nil
 		}
+	}
+
+	if options.streamOpener != nil {
+		daemon.streamOpener = options.streamOpener
 	}
 
 	return daemon
@@ -105,18 +105,8 @@ func listen(ctx context.Context, cfg config.Daemon) (net.Listener, error) {
 	return listener, nil
 }
 
-func dialUpstream(ctx context.Context, _ config.Daemon) (*connEndpoint, error) {
-	address := net.JoinHostPort("127.0.0.1", strconv.Itoa(domainusbip.DefaultPort))
-
-	//nolint:exhaustruct // Default Dialer is sufficient for daemon prototype upstream TCP dialing.
-	dialer := net.Dialer{}
-
-	conn, err := dialer.DialContext(ctx, "tcp", address)
-	if err != nil {
-		return nil, fmt.Errorf("dial upstream tcp %s: %w", address, err)
-	}
-
-	return newConnEndpoint(conn), nil
+func defaultUpstreamAddress() string {
+	return net.JoinHostPort("127.0.0.1", strconv.Itoa(domainusbip.DefaultPort))
 }
 
 func listenAddress(cfg config.Daemon) string {

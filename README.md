@@ -8,8 +8,8 @@ The product goal is not only to tunnel USB/IP traffic. The CLI must become a
 practical replacement for the legacy `usbip` user workflow, suitable for use
 through a shell alias, wrapper, or drop-in binary strategy.
 
-Current status: CLI and daemon compatibility scaffolds. QUIC transport and TLS
-are not implemented in the current codebase.
+Current status: CLI compatibility scaffolds plus an early daemon TCP forwarding
+prototype. QUIC transport and TLS are not implemented in the current codebase.
 
 ## Compatibility Goal
 
@@ -153,9 +153,10 @@ usage: usbipd [options]
 		Show version.
 ```
 
-All daemon flags are parsed. The daemon runtime behavior is not implemented
-yet, so invoking it without `--help` or `--version` returns
-`usbipd: daemon is not implemented yet`.
+All daemon flags are parsed. The daemon runtime can listen for local TCP
+sessions and forward each accepted session through the current stream transport
+adapter. The adapter is TCP-backed today; QUIC transport and TLS are still not
+implemented.
 
 ## Observed Legacy USB/IP API
 
@@ -211,7 +212,7 @@ usage: usbip unbind <args>
 - `attach` is only a CLI stub and does not perform legacy attach behavior.
 - `list -r` is only a CLI stub and does not print remote exportable devices.
 - `list -l`, `list -p`, `list -d`, `detach`, `bind`, `unbind`, and `port` are not implemented.
-- The daemon command parses the observed `usbipd` options, but does not start a service yet.
+- The daemon command starts an early TCP forwarding service, not the final QUIC proxy yet.
 - QUIC transport and TLS configuration are not implemented in the current codebase.
 
 ## Implementation Direction

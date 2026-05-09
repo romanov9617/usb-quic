@@ -1,21 +1,24 @@
-package daemon
+package tunnel
 
 import (
 	"fmt"
 	"net"
 )
 
-type connEndpoint struct {
+// NetEndpoint adapts a net.Conn to Endpoint.
+type NetEndpoint struct {
 	net.Conn
 }
 
-func newConnEndpoint(conn net.Conn) *connEndpoint {
-	return &connEndpoint{
+// NewNetEndpoint adapts conn to NetEndpoint.
+func NewNetEndpoint(conn net.Conn) *NetEndpoint {
+	return &NetEndpoint{
 		Conn: conn,
 	}
 }
 
-func (endpoint *connEndpoint) CloseRead() error {
+// CloseRead closes the read side when conn supports half-close, or closes conn.
+func (endpoint *NetEndpoint) CloseRead() error {
 	if conn, ok := endpoint.Conn.(interface{ CloseRead() error }); ok {
 		err := conn.CloseRead()
 		if err != nil {
@@ -33,7 +36,8 @@ func (endpoint *connEndpoint) CloseRead() error {
 	return nil
 }
 
-func (endpoint *connEndpoint) CloseWrite() error {
+// CloseWrite closes the write side when conn supports half-close, or closes conn.
+func (endpoint *NetEndpoint) CloseWrite() error {
 	if conn, ok := endpoint.Conn.(interface{ CloseWrite() error }); ok {
 		err := conn.CloseWrite()
 		if err != nil {

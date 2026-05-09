@@ -48,9 +48,9 @@ func (log *logger) logClientAccepted(remoteAddr net.Addr) {
 	log.load().Info("client accepted", slog.String("remote_addr", addrString(remoteAddr)))
 }
 
-func (log *logger) logUpstreamDialFailed(remoteAddr net.Addr, err error) {
+func (log *logger) logStreamOpenFailed(remoteAddr net.Addr, err error) {
 	log.load().Error(
-		"upstream dial failed",
+		"stream open failed",
 		slog.String("remote_addr", addrString(remoteAddr)),
 		slog.Any("error", err),
 	)

@@ -8,8 +8,8 @@
 практической заменой legacy workflow команды `usbip`, пригодной для
 использования через shell alias, wrapper или стратегию drop-in binary.
 
-Текущий статус: CLI- и daemon-каркасы совместимости. QUIC transport и TLS в
-текущем коде не реализованы.
+Текущий статус: CLI-каркас совместимости и ранний daemon TCP forwarding
+prototype. QUIC transport и TLS в текущем коде не реализованы.
 
 ## Цель Совместимости
 
@@ -154,9 +154,10 @@ usage: usbipd [options]
 		Show version.
 ```
 
-Все daemon flags парсятся. Runtime-поведение daemon пока не реализовано, поэтому
-вызов без `--help` или `--version` возвращает `usbipd: daemon is not implemented
-yet`.
+Все daemon flags парсятся. Daemon runtime уже может слушать локальные TCP
+sessions и прокидывать каждую принятую session через текущий stream transport
+adapter. Сейчас adapter основан на TCP; QUIC transport и TLS еще не
+реализованы.
 
 ## Наблюдаемый Legacy USB/IP API
 
@@ -212,7 +213,7 @@ usage: usbip unbind <args>
 - `attach` является только CLI-заглушкой и не выполняет legacy attach behavior.
 - `list -r` является только CLI-заглушкой и не выводит remote exportable devices.
 - `list -l`, `list -p`, `list -d`, `detach`, `bind`, `unbind` и `port` не реализованы.
-- Daemon command парсит наблюдаемые `usbipd` options, но пока не запускает service.
+- Daemon command запускает ранний TCP forwarding service, но еще не финальный QUIC proxy.
 - QUIC transport и TLS configuration в текущем коде не реализованы.
 
 ## Направление Реализации
