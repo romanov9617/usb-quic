@@ -121,7 +121,7 @@ func newRootCommand(streams Streams, level *logging.LevelVar) *cobra.Command {
 
 func newDaemonRun(logger *logging.Logger) daemon.RunFunc {
 	return func(ctx context.Context, cfg config.Daemon) error {
-		return runtimedaemon.Run(ctx, cfg, logger)
+		return runtimedaemon.New(cfg, logger).Run(ctx)
 	}
 }
 

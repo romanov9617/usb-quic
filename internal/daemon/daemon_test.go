@@ -32,7 +32,7 @@ func TestRunCreatesAndRemovesPIDFile(t *testing.T) {
 	listener := newFakeListener()
 
 	go func() {
-		errs <- runWithListener(ctx, config.Daemon{
+		daemon := New(config.Daemon{
 			BindIPv4:   true,
 			BindIPv6:   false,
 			DeviceMode: false,
@@ -40,7 +40,8 @@ func TestRunCreatesAndRemovesPIDFile(t *testing.T) {
 			Debug:      false,
 			PIDFile:    pidFile,
 			TCPPort:    testTCPPort,
-		}, testLogger(), fakeListen(listener, nil))
+		}, testLogger(), WithListener(listener))
+		errs <- daemon.Run(ctx)
 	}()
 
 	waitForPIDFile(t, pidFile)
@@ -69,7 +70,7 @@ func TestRunCreatesAndRemovesPIDFile(t *testing.T) {
 func TestRunReturnsPIDFileWriteError(t *testing.T) {
 	t.Parallel()
 
-	err := runWithListener(t.Context(), config.Daemon{
+	daemon := New(config.Daemon{
 		BindIPv4:   false,
 		BindIPv6:   false,
 		DeviceMode: false,
@@ -77,7 +78,9 @@ func TestRunReturnsPIDFileWriteError(t *testing.T) {
 		Debug:      false,
 		PIDFile:    filepath.Join(t.TempDir(), "missing", "usbipd.pid"),
 		TCPPort:    testTCPPort,
-	}, testLogger(), fakeListen(newFakeListener(), nil))
+	}, testLogger(), WithListener(newFakeListener()))
+
+	err := daemon.Run(t.Context())
 	if err == nil {
 		t.Fatal("expected error")
 	}
@@ -90,17 +93,19 @@ func TestRunReturnsPIDFileWriteError(t *testing.T) {
 func TestRunReturnsListenError(t *testing.T) {
 	t.Parallel()
 
-	err := runWithListener(t.Context(), config.Daemon{
+	daemon := New(config.Daemon{
 		BindIPv4:   true,
 		BindIPv6:   false,
 		DeviceMode: false,
 		Daemonize:  false,
 		Debug:      false,
 		PIDFile:    "",
-		TCPPort:    testTCPPort,
-	}, testLogger(), fakeListen(nil, errBusy))
-	if !errors.Is(err, errBusy) {
-		t.Fatalf("expected %v, got %v", errBusy, err)
+		TCPPort:    -1,
+	}, testLogger())
+
+	err := daemon.Run(t.Context())
+	if err == nil {
+		t.Fatal("expected error")
 	}
 }
 
@@ -115,7 +120,7 @@ func TestRunClosesListenerOnCancel(t *testing.T) {
 	listener := newFakeListener()
 
 	go func() {
-		errs <- runWithListener(ctx, config.Daemon{
+		daemon := New(config.Daemon{
 			BindIPv4:   true,
 			BindIPv6:   false,
 			DeviceMode: false,
@@ -123,7 +128,8 @@ func TestRunClosesListenerOnCancel(t *testing.T) {
 			Debug:      false,
 			PIDFile:    "",
 			TCPPort:    testTCPPort,
-		}, testLogger(), fakeListen(listener, nil))
+		}, testLogger(), WithListener(listener))
+		errs <- daemon.Run(ctx)
 	}()
 
 	cancel()
@@ -234,12 +240,6 @@ func waitListenerClosed(t *testing.T, listener *fakeListener) {
 	case <-listener.closed:
 	case <-time.After(time.Second):
 		t.Fatal("listener was not closed")
-	}
-}
-
-func fakeListen(listener net.Listener, err error) listenFunc {
-	return func(_ context.Context, _ config.Daemon) (net.Listener, error) {
-		return listener, err
 	}
 }
 

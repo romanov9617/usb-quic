@@ -2,6 +2,7 @@ package daemon
 
 import (
 	"log/slog"
+	"net"
 	"os"
 	"sync/atomic"
 
@@ -43,6 +44,42 @@ func (log *logger) logDaemonStopped(reason error) {
 	log.load().Info("daemon stopped", slog.Any("reason", reason))
 }
 
+func (log *logger) logClientAccepted(remoteAddr net.Addr) {
+	log.load().Info("client accepted", slog.String("remote_addr", addrString(remoteAddr)))
+}
+
+func (log *logger) logUpstreamDialFailed(remoteAddr net.Addr, err error) {
+	log.load().Error(
+		"upstream dial failed",
+		slog.String("remote_addr", addrString(remoteAddr)),
+		slog.Any("error", err),
+	)
+}
+
+func (log *logger) logTunnelStarted(remoteAddr net.Addr) {
+	log.load().Info("tunnel started", slog.String("remote_addr", addrString(remoteAddr)))
+}
+
+func (log *logger) logTunnelStopped(remoteAddr net.Addr) {
+	log.load().Info("tunnel stopped", slog.String("remote_addr", addrString(remoteAddr)))
+}
+
+func (log *logger) logTunnelFailed(remoteAddr net.Addr, err error) {
+	log.load().Error(
+		"tunnel failed",
+		slog.String("remote_addr", addrString(remoteAddr)),
+		slog.Any("error", err),
+	)
+}
+
 func (log *logger) load() *slog.Logger {
 	return log.logger.Load()
+}
+
+func addrString(addr net.Addr) string {
+	if addr == nil {
+		return ""
+	}
+
+	return addr.String()
 }
