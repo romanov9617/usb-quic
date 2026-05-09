@@ -82,13 +82,18 @@ func TestHandleConnectionClosesClientOnDialError(t *testing.T) {
 
 func testDaemon(streamOpener transport.StreamOpener) *Daemon {
 	return New(config.Daemon{
-		BindIPv4:   false,
-		BindIPv6:   false,
-		DeviceMode: false,
-		Daemonize:  false,
-		Debug:      false,
-		PIDFile:    "",
-		TCPPort:    testTCPPort,
+		BindIPv4:       false,
+		BindIPv6:       false,
+		DeviceMode:     false,
+		Daemonize:      false,
+		Debug:          false,
+		DevInsecureTLS: false,
+		PIDFile:        "",
+		QUICAddr:       "",
+		QUICListen:     "",
+		TCPPort:        testTCPPort,
+		TransportMode:  "",
+		Upstream:       "",
 	}, testLogger(), WithStreamOpener(streamOpener))
 }
 

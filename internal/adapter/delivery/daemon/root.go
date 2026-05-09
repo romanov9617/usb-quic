@@ -15,18 +15,29 @@ import (
 
 const appName = "usbipd"
 
+const (
+	defaultQUICAddress   = "127.0.0.1:4242"
+	defaultTransportMode = "tcp"
+	defaultUpstream      = "127.0.0.1:3240"
+)
+
 // version is injected by build flags. The fallback is used for local builds.
 var version = "dev"
 
 type rootOptions struct {
-	ipv4    bool
-	ipv6    bool
-	device  bool
-	daemon  bool
-	debug   bool
-	pidFile string
-	tcpPort int
-	version bool
+	ipv4           bool
+	ipv6           bool
+	device         bool
+	daemon         bool
+	debug          bool
+	devInsecureTLS bool
+	pidFile        string
+	quicAddr       string
+	quicListen     string
+	tcpPort        int
+	transportMode  string
+	upstream       string
+	version        bool
 }
 
 // RunFunc runs the daemon runtime.
@@ -51,14 +62,19 @@ func NewRootCommand(stdin io.Reader, stdout, stderr io.Writer) *cobra.Command {
 // NewRootCommandWithRuntime builds a daemon command with runtime dependencies.
 func NewRootCommandWithRuntime(stdin io.Reader, stdout, stderr io.Writer, runtime Runtime) *cobra.Command {
 	opts := rootOptions{
-		ipv4:    false,
-		ipv6:    false,
-		device:  false,
-		daemon:  false,
-		debug:   false,
-		pidFile: "",
-		tcpPort: domainusbip.DefaultPort,
-		version: false,
+		ipv4:           false,
+		ipv6:           false,
+		device:         false,
+		daemon:         false,
+		debug:          false,
+		devInsecureTLS: false,
+		pidFile:        "",
+		quicAddr:       defaultQUICAddress,
+		quicListen:     defaultQUICAddress,
+		tcpPort:        domainusbip.DefaultPort,
+		transportMode:  defaultTransportMode,
+		upstream:       defaultUpstream,
+		version:        false,
 	}
 
 	//nolint:exhaustruct // Cobra commands intentionally set only behavior relevant to this daemon CLI.
@@ -88,6 +104,12 @@ func NewRootCommandWithRuntime(stdin io.Reader, stdout, stderr io.Writer, runtim
 	cmd.SetHelpTemplate(rootHelpTemplate())
 	cmd.SetUsageTemplate(rootHelpTemplate())
 
+	registerFlags(cmd, &opts)
+
+	return cmd
+}
+
+func registerFlags(cmd *cobra.Command, opts *rootOptions) {
 	cmd.Flags().BoolVarP(&opts.ipv4, "ipv4", "4", false, "bind to IPv4")
 	cmd.Flags().BoolVarP(&opts.ipv6, "ipv6", "6", false, "bind to IPv6")
 	cmd.Flags().BoolVarP(&opts.device, "device", "e", false, "run in device mode")
@@ -96,8 +118,37 @@ func NewRootCommandWithRuntime(stdin io.Reader, stdout, stderr io.Writer, runtim
 	cmd.Flags().StringVarP(&opts.pidFile, "pid", "P", "", "write process id to file")
 	cmd.Flags().IntVarP(&opts.tcpPort, "tcp-port", "t", domainusbip.DefaultPort, "listen on TCP/IP port")
 	cmd.Flags().BoolVarP(&opts.version, "version", "v", false, "show version")
-
-	return cmd
+	cmd.Flags().StringVar(
+		&opts.transportMode,
+		"usb-quic-transport",
+		opts.transportMode,
+		"usb-quic transport mode: tcp, quic-client, or quic-server",
+	)
+	cmd.Flags().StringVar(
+		&opts.quicListen,
+		"usb-quic-quic-listen",
+		opts.quicListen,
+		"usb-quic QUIC listen address for quic-server mode",
+	)
+	cmd.Flags().StringVar(
+		&opts.quicAddr,
+		"usb-quic-quic-addr",
+		opts.quicAddr,
+		"usb-quic QUIC server address for quic-client mode",
+	)
+	cmd.Flags().StringVar(
+		&opts.upstream,
+		"usb-quic-upstream",
+		opts.upstream,
+		"usb-quic TCP upstream address for quic-server mode",
+	)
+	cmd.Flags().BoolVar(
+		&opts.devInsecureTLS,
+		"usb-quic-dev-insecure-tls",
+		opts.devInsecureTLS,
+		"use dev-only self-signed/insecure TLS for local transport smoke tests",
+	)
+	hideUSBQUICFlags(cmd)
 }
 
 func rootHelpTemplate() string {
@@ -159,12 +210,32 @@ func runDaemon(cmd *cobra.Command, runtime Runtime, opts rootOptions) error {
 
 func configFromOptions(opts rootOptions) config.Daemon {
 	return config.Daemon{
-		BindIPv4:   opts.ipv4,
-		BindIPv6:   opts.ipv6,
-		DeviceMode: opts.device,
-		Daemonize:  opts.daemon,
-		Debug:      opts.debug,
-		PIDFile:    opts.pidFile,
-		TCPPort:    opts.tcpPort,
+		BindIPv4:       opts.ipv4,
+		BindIPv6:       opts.ipv6,
+		DeviceMode:     opts.device,
+		Daemonize:      opts.daemon,
+		Debug:          opts.debug,
+		DevInsecureTLS: opts.devInsecureTLS,
+		PIDFile:        opts.pidFile,
+		QUICAddr:       opts.quicAddr,
+		QUICListen:     opts.quicListen,
+		TCPPort:        opts.tcpPort,
+		TransportMode:  opts.transportMode,
+		Upstream:       opts.upstream,
+	}
+}
+
+func hideUSBQUICFlags(cmd *cobra.Command) {
+	for _, name := range []string{
+		"usb-quic-transport",
+		"usb-quic-quic-listen",
+		"usb-quic-quic-addr",
+		"usb-quic-upstream",
+		"usb-quic-dev-insecure-tls",
+	} {
+		err := cmd.Flags().MarkHidden(name)
+		if err != nil {
+			panic(err)
+		}
 	}
 }

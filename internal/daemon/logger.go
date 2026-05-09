@@ -35,8 +35,13 @@ func (log *logger) logDaemonStarting(cfg config.Daemon) {
 		slog.Bool("device_mode", cfg.DeviceMode),
 		slog.Bool("daemonize", cfg.Daemonize),
 		slog.Bool("debug", cfg.Debug),
+		slog.Bool("dev_insecure_tls", cfg.DevInsecureTLS),
 		slog.String("pid_file", cfg.PIDFile),
+		slog.String("quic_addr", cfg.QUICAddr),
+		slog.String("quic_listen", cfg.QUICListen),
 		slog.Int("tcp_port", cfg.TCPPort),
+		slog.String("transport_mode", cfg.TransportMode),
+		slog.String("upstream", cfg.Upstream),
 	)
 }
 
