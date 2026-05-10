@@ -22,7 +22,9 @@ func (daemon *Daemon) serve(ctx context.Context, listener net.Listener) error {
 
 		daemon.log.logClientAccepted(conn.RemoteAddr())
 
-		go daemon.handleConnection(ctx, conn)
+		daemon.wg.Go(func() {
+			daemon.handleConnection(ctx, conn)
+		})
 	}
 }
 

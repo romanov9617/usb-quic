@@ -14,6 +14,7 @@ import (
 
 	"usb-quic/internal/adapter/logging"
 	"usb-quic/internal/config"
+	"usb-quic/internal/tunnel"
 )
 
 const testTCPPort = 3241
@@ -156,6 +157,58 @@ func TestRunClosesListenerOnCancel(t *testing.T) {
 
 	waitRunStopped(t, errs)
 	waitListenerClosed(t, listener)
+}
+
+func TestRunWaitsForActiveConnectionHandlers(t *testing.T) {
+	t.Parallel()
+
+	ctx, cancel := context.WithCancel(t.Context())
+	clientPeer, clientConn := newMemoryConnPair()
+	upstreamPeer, upstreamConn := newMemoryConnPair()
+	listener := newSingleConnListener(clientConn)
+	handlerDone := make(chan struct{})
+	errs := make(chan error, 1)
+
+	defer func() {
+		_ = clientPeer.Close()
+	}()
+	defer func() {
+		_ = upstreamPeer.Close()
+	}()
+
+	daemon := New(config.Daemon{
+		BindIPv4:       true,
+		BindIPv6:       false,
+		DeviceMode:     false,
+		Daemonize:      false,
+		Debug:          false,
+		DevInsecureTLS: false,
+		PIDFile:        "",
+		QUICAddr:       "",
+		QUICListen:     "",
+		TCPPort:        testTCPPort,
+		TransportMode:  "",
+		Upstream:       "",
+	}, testLogger(), WithListener(listener), WithStreamOpener(blockingStreamOpener{
+		endpoint: upstreamConn,
+		done:     handlerDone,
+	}))
+
+	go func() {
+		errs <- daemon.Run(ctx)
+	}()
+
+	waitConnectionAccepted(t, listener)
+	cancel()
+
+	select {
+	case err := <-errs:
+		t.Fatalf("run returned before active handler finished: %v", err)
+	case <-time.After(50 * time.Millisecond):
+	}
+
+	close(handlerDone)
+	waitRunStopped(t, errs)
 }
 
 func TestListenAddress(t *testing.T) {
@@ -308,6 +361,88 @@ func (listener *fakeListener) Close() error {
 
 func (listener *fakeListener) Addr() net.Addr {
 	return fakeAddr("")
+}
+
+type singleConnListener struct {
+	conn       net.Conn
+	accepted   chan struct{}
+	closed     chan struct{}
+	acceptOnce sync.Once
+	closeOnce  sync.Once
+}
+
+func newSingleConnListener(conn net.Conn) *singleConnListener {
+	return &singleConnListener{
+		conn:       conn,
+		accepted:   make(chan struct{}),
+		closed:     make(chan struct{}),
+		acceptOnce: sync.Once{},
+		closeOnce:  sync.Once{},
+	}
+}
+
+func (listener *singleConnListener) Accept() (net.Conn, error) {
+	var conn net.Conn
+
+	listener.acceptOnce.Do(func() {
+		conn = listener.conn
+		close(listener.accepted)
+	})
+
+	if conn != nil {
+		return conn, nil
+	}
+
+	<-listener.closed
+
+	return nil, net.ErrClosed
+}
+
+func (listener *singleConnListener) Close() error {
+	listener.closeOnce.Do(func() {
+		close(listener.closed)
+	})
+
+	return nil
+}
+
+func (listener *singleConnListener) Addr() net.Addr {
+	return fakeAddr("")
+}
+
+func waitConnectionAccepted(t *testing.T, listener *singleConnListener) {
+	t.Helper()
+
+	select {
+	case <-listener.accepted:
+	case <-time.After(time.Second):
+		t.Fatal("connection was not accepted")
+	}
+}
+
+type blockingStreamOpener struct {
+	endpoint *memoryConn
+	done     <-chan struct{}
+}
+
+//nolint:ireturn // Test helper returns the transport boundary interface under test.
+func (opener blockingStreamOpener) OpenStream(context.Context) (tunnel.Endpoint, error) {
+	return blockingEndpoint{
+		Endpoint: opener.endpoint,
+		done:     opener.done,
+	}, nil
+}
+
+type blockingEndpoint struct {
+	tunnel.Endpoint
+
+	done <-chan struct{}
+}
+
+func (endpoint blockingEndpoint) Close() error {
+	<-endpoint.done
+
+	return endpoint.Endpoint.Close()
 }
 
 type fakeAddr string

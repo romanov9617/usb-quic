@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 
 	"github.com/quic-go/quic-go"
 
@@ -25,6 +26,16 @@ func (fn StreamHandlerFunc) HandleStream(ctx context.Context, stream tunnel.Endp
 
 // ServeQUICListener accepts QUIC connections and dispatches their streams.
 func ServeQUICListener(ctx context.Context, listener *quic.Listener, handler StreamHandler) error {
+	ctx, cancel := context.WithCancel(ctx)
+
+	var wg sync.WaitGroup
+
+	defer func() {
+		cancel()
+
+		wg.Wait()
+	}()
+
 	for {
 		conn, err := listener.Accept(ctx)
 		if err != nil {
@@ -35,13 +46,21 @@ func ServeQUICListener(ctx context.Context, listener *quic.Listener, handler Str
 			return fmt.Errorf("accept quic connection: %w", err)
 		}
 
-		go func() {
+		wg.Go(func() {
 			_ = serveQUICConnection(ctx, conn, handler)
-		}()
+		})
 	}
 }
 
 func serveQUICConnection(ctx context.Context, conn *quic.Conn, handler StreamHandler) error {
+	var wg sync.WaitGroup
+
+	defer func() {
+		_ = conn.CloseWithError(0, "")
+
+		wg.Wait()
+	}()
+
 	for {
 		stream, err := conn.AcceptStream(ctx)
 		if err != nil {
@@ -52,9 +71,9 @@ func serveQUICConnection(ctx context.Context, conn *quic.Conn, handler StreamHan
 			return fmt.Errorf("accept quic stream: %w", err)
 		}
 
-		go func() {
+		wg.Go(func() {
 			_ = handler.HandleStream(ctx, NewQUICStreamEndpoint(stream))
-		}()
+		})
 	}
 }
 

@@ -91,6 +91,64 @@ func TestServeQUICListenerStopsOnClosedListener(t *testing.T) {
 	}
 }
 
+func TestServeQUICListenerWaitsForActiveStreamHandlers(t *testing.T) {
+	t.Parallel()
+
+	ctx, cancel := context.WithTimeout(t.Context(), time.Second)
+	defer cancel()
+
+	listener := listenQUIC(t)
+	handlerStarted := make(chan struct{})
+	releaseHandler := make(chan struct{})
+	errs := make(chan error, 1)
+
+	go func() {
+		errs <- ServeQUICListener(ctx, listener, StreamHandlerFunc(
+			func(context.Context, tunnel.Endpoint) error {
+				close(handlerStarted)
+				<-releaseHandler
+
+				return nil
+			},
+		))
+	}()
+
+	clientConn := dialQUIC(t, ctx, listener)
+	defer closeQUICConn(clientConn)
+
+	clientStream, err := clientConn.OpenStreamSync(ctx)
+	if err != nil {
+		t.Fatalf("open client stream: %v", err)
+	}
+
+	writeString(t, clientStream, "x")
+
+	select {
+	case <-handlerStarted:
+	case <-ctx.Done():
+		t.Fatalf("stream handler did not start: %v", ctx.Err())
+	}
+
+	closeQUICListener(listener)
+
+	select {
+	case err := <-errs:
+		t.Fatalf("serve quic listener returned before active handler finished: %v", err)
+	case <-time.After(50 * time.Millisecond):
+	}
+
+	close(releaseHandler)
+
+	select {
+	case err := <-errs:
+		if err != nil {
+			t.Fatalf("serve quic listener: %v", err)
+		}
+	case <-ctx.Done():
+		t.Fatalf("serve quic listener did not stop: %v", ctx.Err())
+	}
+}
+
 //nolint:ireturn // Test helper returns the transport boundary interface under test.
 func waitAcceptedStream(
 	t *testing.T,

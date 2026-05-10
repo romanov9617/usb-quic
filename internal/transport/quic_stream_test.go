@@ -71,6 +71,62 @@ func TestQUICStreamOpenerOpensBidirectionalStream(t *testing.T) {
 	}
 }
 
+func TestQUICDialStreamOpenerCloseClosesCachedConnection(t *testing.T) {
+	t.Parallel()
+
+	ctx, cancel := context.WithTimeout(t.Context(), time.Second)
+	defer cancel()
+
+	listener := listenQUIC(t)
+	defer closeQUICListener(listener)
+
+	serverStream, serverErrs := acceptQUICStream(ctx, listener)
+	opener := NewQUICDialStreamOpener(listener.Addr().String(), testClientTLSConfig(), nil)
+
+	endpoint, err := opener.OpenStream(ctx)
+	if err != nil {
+		t.Fatalf("open stream: %v", err)
+	}
+	defer func() {
+		_ = endpoint.Close()
+	}()
+
+	writeString(t, endpoint, "x")
+
+	var accepted *quic.Stream
+	select {
+	case accepted = <-serverStream:
+	case err = <-serverErrs:
+		t.Fatalf("accept stream: %v", err)
+	case <-ctx.Done():
+		t.Fatalf("accept stream timed out: %v", ctx.Err())
+	}
+
+	if got := readString(t, accepted, len("x")); got != "x" {
+		t.Fatalf("server read %q, want %q", got, "x")
+	}
+
+	err = opener.Close()
+	if err != nil {
+		t.Fatalf("close opener: %v", err)
+	}
+
+	errs := make(chan error, 1)
+	go func() {
+		_, readErr := accepted.Read(make([]byte, 1))
+		errs <- readErr
+	}()
+
+	select {
+	case readErr := <-errs:
+		if readErr == nil {
+			t.Fatal("expected server stream read error")
+		}
+	case <-ctx.Done():
+		t.Fatalf("server stream read did not unblock: %v", ctx.Err())
+	}
+}
+
 func listenQUIC(t *testing.T) *quic.Listener {
 	t.Helper()
 

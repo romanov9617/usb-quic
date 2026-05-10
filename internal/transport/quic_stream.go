@@ -3,6 +3,7 @@ package transport
 import (
 	"context"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"sync"
 
@@ -72,6 +73,29 @@ func (opener *QUICDialStreamOpener) OpenStream(ctx context.Context) (tunnel.Endp
 	}
 
 	return NewQUICStreamEndpoint(stream), nil
+}
+
+// Close closes the cached QUIC connection, if one has been opened.
+func (opener *QUICDialStreamOpener) Close() error {
+	opener.mu.Lock()
+	conn := opener.conn
+	opener.conn = nil
+	opener.mu.Unlock()
+
+	if conn == nil {
+		return nil
+	}
+
+	err := conn.CloseWithError(0, "")
+	if errors.Is(err, quic.ErrServerClosed) {
+		return nil
+	}
+
+	if err != nil {
+		return fmt.Errorf("close quic connection: %w", err)
+	}
+
+	return nil
 }
 
 func (opener *QUICDialStreamOpener) connection(ctx context.Context) (*quic.Conn, error) {
