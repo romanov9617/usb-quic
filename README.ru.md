@@ -8,8 +8,8 @@
 практической заменой legacy workflow команды `usbip`, пригодной для
 использования через shell alias, wrapper или стратегию drop-in binary.
 
-Текущий статус: CLI-каркас совместимости и ранний daemon TCP forwarding
-prototype. QUIC transport и TLS в текущем коде не реализованы.
+Текущий статус: CLI-каркас совместимости, TCP forwarding и experimental QUIC
+client/server transport. Production TLS configuration еще предстоит добавить.
 
 ## Цель Совместимости
 
@@ -213,8 +213,11 @@ usage: usbip unbind <args>
 - `attach` является только CLI-заглушкой и не выполняет legacy attach behavior.
 - `list -r` выводит remote exportable devices, но имена vendor/product пока являются placeholder-текстом до добавления USB ID database.
 - `list -l`, `list -p`, `list -d`, `detach`, `bind`, `unbind` и `port` не реализованы.
-- Daemon command запускает ранний TCP forwarding service, но еще не финальный QUIC proxy.
-- QUIC transport и TLS configuration в текущем коде не реализованы.
+- Daemon command поддерживает TCP forwarding и experimental QUIC client/server
+  transport modes.
+- QUIC smoke tests сейчас используют ephemeral self-signed certificate с
+  `--usb-quic-dev-insecure-tls`; production TLS configuration еще предстоит
+  добавить.
 
 ## Направление Реализации
 
@@ -234,6 +237,12 @@ Daemon entrypoint содержит скрытые `usb-quic` flags для лок
 текущего transport path без изменения usbipd-like help output. Smoke test
 использует ephemeral self-signed certificate и отключает client-side
 certificate verification, поэтому это не production TLS configuration.
+
+Сначала соберите binaries:
+
+```bash
+make build
+```
 
 Запустите в трех отдельных терминалах:
 
@@ -257,7 +266,7 @@ PY
 ```
 
 ```bash
-GOCACHE=/tmp/usb-quic-go-build-cache go run ./cmd/daemon \
+./dist/daemon \
   --debug \
   --usb-quic-transport quic-server \
   --usb-quic-quic-listen 127.0.0.1:14242 \
@@ -266,7 +275,7 @@ GOCACHE=/tmp/usb-quic-go-build-cache go run ./cmd/daemon \
 ```
 
 ```bash
-GOCACHE=/tmp/usb-quic-go-build-cache go run ./cmd/daemon \
+./dist/daemon \
   --debug \
   --tcp-port 13241 \
   --usb-quic-transport quic-client \
@@ -303,30 +312,11 @@ Fake upstream ниже отвечает пустым `OP_REP_DEVLIST`, поэт�
 Запустите в трех отдельных терминалах:
 
 ```bash
-python3 - <<'PY'
-import socket
-
-OP_REQ_DEVLIST = bytes.fromhex("0111800500000000")
-OP_REP_DEVLIST_EMPTY = bytes.fromhex("011100050000000000000000")
-
-sock = socket.socket()
-sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-sock.bind(("127.0.0.1", 19000))
-sock.listen()
-print("fake usbipd listening on 127.0.0.1:19000", flush=True)
-
-while True:
-    conn, addr = sock.accept()
-    with conn:
-        request = conn.recv(len(OP_REQ_DEVLIST))
-        print(f"accepted {addr}, request={request.hex()}", flush=True)
-        if request == OP_REQ_DEVLIST:
-            conn.sendall(OP_REP_DEVLIST_EMPTY)
-PY
+python3 scripts/fake_usbipd_devlist.py
 ```
 
 ```bash
-GOCACHE=/tmp/usb-quic-go-build-cache go run ./cmd/daemon \
+./dist/daemon \
   --debug \
   --usb-quic-transport quic-server \
   --usb-quic-quic-listen 127.0.0.1:14242 \
@@ -335,7 +325,7 @@ GOCACHE=/tmp/usb-quic-go-build-cache go run ./cmd/daemon \
 ```
 
 ```bash
-GOCACHE=/tmp/usb-quic-go-build-cache go run ./cmd/daemon \
+./dist/daemon \
   --debug \
   --tcp-port 13241 \
   --usb-quic-transport quic-client \
@@ -346,7 +336,7 @@ GOCACHE=/tmp/usb-quic-go-build-cache go run ./cmd/daemon \
 Затем запустите CLI через client-side TCP entrypoint:
 
 ```bash
-GOCACHE=/tmp/usb-quic-go-build-cache go run ./cmd/usb-quic \
+./dist/usb-quic \
   --tcp-port 13241 \
   list -r 127.0.0.1
 ```
@@ -356,3 +346,55 @@ GOCACHE=/tmp/usb-quic-go-build-cache go run ./cmd/usb-quic \
 ```text
 usbip: info: no exportable devices found on 127.0.0.1
 ```
+
+## Ручная проверка `usb-quic list -r` с настоящим `usbipd`
+
+После успешной проверки fake upstream направьте QUIC server на настоящий
+`usbipd` вместо `scripts/fake_usbipd_devlist.py`.
+
+На машине, к которой подключено USB-устройство:
+
+```bash
+sudo modprobe usbip-host
+sudo usbipd -D
+```
+
+В другом терминале на этой же машине посмотрите локальные USB devices и
+экспортируйте нужное:
+
+```bash
+usbip list -l
+sudo usbip bind -b <BUSID>
+```
+
+Запустите QUIC server с upstream на настоящий порт `usbipd`:
+
+```bash
+./dist/daemon \
+  --debug \
+  --usb-quic-transport quic-server \
+  --usb-quic-quic-listen 127.0.0.1:14242 \
+  --usb-quic-upstream 127.0.0.1:3240 \
+  --usb-quic-dev-insecure-tls
+```
+
+Запустите client-side TCP entrypoint:
+
+```bash
+./dist/daemon \
+  --debug \
+  --tcp-port 13241 \
+  --usb-quic-transport quic-client \
+  --usb-quic-quic-addr 127.0.0.1:14242 \
+  --usb-quic-dev-insecure-tls
+```
+
+Затем запросите exported devices через tunnel:
+
+```bash
+./dist/usb-quic \
+  --tcp-port 13241 \
+  list -r 127.0.0.1
+```
+
+В выводе должны появиться устройства, exported настоящим `usbipd`.
