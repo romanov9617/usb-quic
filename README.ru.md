@@ -8,8 +8,8 @@
 практической заменой legacy workflow команды `usbip`, пригодной для
 использования через shell alias, wrapper или стратегию drop-in binary.
 
-Текущий статус: CLI- и daemon-каркасы совместимости. QUIC transport и TLS в
-текущем коде не реализованы.
+Текущий статус: CLI-каркас совместимости и ранний daemon TCP forwarding
+prototype. QUIC transport и TLS в текущем коде не реализованы.
 
 ## Цель Совместимости
 
@@ -154,9 +154,10 @@ usage: usbipd [options]
 		Show version.
 ```
 
-Все daemon flags парсятся. Runtime-поведение daemon пока не реализовано, поэтому
-вызов без `--help` или `--version` возвращает `usbipd: daemon is not implemented
-yet`.
+Все daemon flags парсятся. Daemon runtime уже может слушать локальные TCP
+sessions и прокидывать каждую принятую session через текущий stream transport
+adapter. Сейчас adapter основан на TCP; QUIC transport и TLS еще не
+реализованы.
 
 ## Наблюдаемый Legacy USB/IP API
 
@@ -212,7 +213,7 @@ usage: usbip unbind <args>
 - `attach` является только CLI-заглушкой и не выполняет legacy attach behavior.
 - `list -r` является только CLI-заглушкой и не выводит remote exportable devices.
 - `list -l`, `list -p`, `list -d`, `detach`, `bind`, `unbind` и `port` не реализованы.
-- Daemon command парсит наблюдаемые `usbipd` options, но пока не запускает service.
+- Daemon command запускает ранний TCP forwarding service, но еще не финальный QUIC proxy.
 - QUIC transport и TLS configuration в текущем коде не реализованы.
 
 ## Направление Реализации
@@ -226,3 +227,64 @@ usage: usbip unbind <args>
 proxy и детали QUIC transport должны быть скрыты за совместимым workflow там,
 где это возможно. Daemon behavior должен находиться в отдельном daemon
 entrypoint, а не в operator-facing команде `usb-quic`.
+
+## Ручная проверка TCP-to-QUIC transport
+
+Daemon entrypoint содержит скрытые `usb-quic` flags для локальной проверки
+текущего transport path без изменения usbipd-like help output. Smoke test
+использует ephemeral self-signed certificate и отключает client-side
+certificate verification, поэтому это не production TLS configuration.
+
+Запустите в трех отдельных терминалах:
+
+```bash
+python3 - <<'PY'
+import socket
+
+sock = socket.socket()
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+sock.bind(("127.0.0.1", 19000))
+sock.listen()
+print("echo upstream listening on 127.0.0.1:19000", flush=True)
+
+while True:
+    conn, addr = sock.accept()
+    print(f"echo accepted {addr}", flush=True)
+    with conn:
+        while data := conn.recv(65536):
+            conn.sendall(data)
+PY
+```
+
+```bash
+GOCACHE=/tmp/usb-quic-go-build-cache go run ./cmd/daemon \
+  --debug \
+  --usb-quic-transport quic-server \
+  --usb-quic-quic-listen 127.0.0.1:14242 \
+  --usb-quic-upstream 127.0.0.1:19000 \
+  --usb-quic-dev-insecure-tls
+```
+
+```bash
+GOCACHE=/tmp/usb-quic-go-build-cache go run ./cmd/daemon \
+  --debug \
+  --tcp-port 13241 \
+  --usb-quic-transport quic-client \
+  --usb-quic-quic-addr 127.0.0.1:14242 \
+  --usb-quic-dev-insecure-tls
+```
+
+Затем отправьте данные в TCP entrypoint:
+
+```bash
+printf 'hello over quic\n' | timeout 3 nc 127.0.0.1 13241
+```
+
+Ожидаемый вывод:
+
+```text
+hello over quic
+```
+
+В логах daemon должны быть события TCP client accept, QUIC server listen и
+tunnel start/stop на обеих сторонах.

@@ -120,13 +120,18 @@ func TestRunPassesConfigToService(t *testing.T) {
 	runner := &recordingRunner{
 		called: false,
 		config: config.Daemon{
-			BindIPv4:   false,
-			BindIPv6:   false,
-			DeviceMode: false,
-			Daemonize:  false,
-			Debug:      false,
-			PIDFile:    "",
-			TCPPort:    0,
+			BindIPv4:       false,
+			BindIPv6:       false,
+			DeviceMode:     false,
+			Daemonize:      false,
+			Debug:          false,
+			DevInsecureTLS: false,
+			PIDFile:        "",
+			QUICAddr:       "",
+			QUICListen:     "",
+			TCPPort:        0,
+			TransportMode:  "",
+			Upstream:       "",
 		},
 		err: ErrNotImplemented,
 	}
@@ -148,13 +153,77 @@ func TestRunPassesConfigToService(t *testing.T) {
 	}
 
 	want := config.Daemon{
-		BindIPv4:   true,
-		BindIPv6:   true,
-		DeviceMode: true,
-		Daemonize:  true,
-		Debug:      true,
-		PIDFile:    testPIDFile,
-		TCPPort:    3241,
+		BindIPv4:       true,
+		BindIPv6:       true,
+		DeviceMode:     true,
+		Daemonize:      true,
+		Debug:          true,
+		DevInsecureTLS: false,
+		PIDFile:        testPIDFile,
+		QUICAddr:       defaultQUICAddress,
+		QUICListen:     defaultQUICAddress,
+		TCPPort:        3241,
+		TransportMode:  defaultTransportMode,
+		Upstream:       defaultUpstream,
+	}
+	if runner.config != want {
+		t.Fatalf("unexpected config: got=%+v want=%+v", runner.config, want)
+	}
+}
+
+func TestRunPassesHiddenUSBQUICConfigToService(t *testing.T) {
+	t.Parallel()
+
+	runner := &recordingRunner{
+		called: false,
+		config: config.Daemon{
+			BindIPv4:       false,
+			BindIPv6:       false,
+			DeviceMode:     false,
+			Daemonize:      false,
+			Debug:          false,
+			DevInsecureTLS: false,
+			PIDFile:        "",
+			QUICAddr:       "",
+			QUICListen:     "",
+			TCPPort:        0,
+			TransportMode:  "",
+			Upstream:       "",
+		},
+		err: ErrNotImplemented,
+	}
+	runtime := Runtime{
+		LogLevel: nil,
+		Run:      runner.Run,
+	}
+
+	cmd := NewRootCommandWithRuntime(nil, bytes.NewBuffer(nil), bytes.NewBuffer(nil), runtime)
+	cmd.SetArgs([]string{
+		"--usb-quic-transport", "quic-client",
+		"--usb-quic-quic-addr", "127.0.0.1:14242",
+		"--usb-quic-quic-listen", "127.0.0.1:24242",
+		"--usb-quic-upstream", "127.0.0.1:19000",
+		"--usb-quic-dev-insecure-tls",
+	})
+
+	err := cmd.Execute()
+	if !errors.Is(err, ErrNotImplemented) {
+		t.Fatalf("expected ErrNotImplemented, got %v", err)
+	}
+
+	want := config.Daemon{
+		BindIPv4:       false,
+		BindIPv6:       false,
+		DeviceMode:     false,
+		Daemonize:      false,
+		Debug:          false,
+		DevInsecureTLS: true,
+		PIDFile:        "",
+		QUICAddr:       "127.0.0.1:14242",
+		QUICListen:     "127.0.0.1:24242",
+		TCPPort:        3240,
+		TransportMode:  "quic-client",
+		Upstream:       "127.0.0.1:19000",
 	}
 	if runner.config != want {
 		t.Fatalf("unexpected config: got=%+v want=%+v", runner.config, want)
@@ -167,13 +236,18 @@ func TestVersionDoesNotCallService(t *testing.T) {
 	runner := &recordingRunner{
 		called: false,
 		config: config.Daemon{
-			BindIPv4:   false,
-			BindIPv6:   false,
-			DeviceMode: false,
-			Daemonize:  false,
-			Debug:      false,
-			PIDFile:    "",
-			TCPPort:    0,
+			BindIPv4:       false,
+			BindIPv6:       false,
+			DeviceMode:     false,
+			Daemonize:      false,
+			Debug:          false,
+			DevInsecureTLS: false,
+			PIDFile:        "",
+			QUICAddr:       "",
+			QUICListen:     "",
+			TCPPort:        0,
+			TransportMode:  "",
+			Upstream:       "",
 		},
 		err: nil,
 	}

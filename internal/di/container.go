@@ -3,11 +3,23 @@ package di
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/tls"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/pem"
+	"errors"
 	"fmt"
 	"io"
+	"log/slog"
+	"math/big"
+	"net"
 	"os/signal"
 	"syscall"
+	"time"
 
+	"github.com/quic-go/quic-go"
 	"github.com/spf13/cobra"
 	"go.uber.org/fx"
 
@@ -15,7 +27,20 @@ import (
 	"usb-quic/internal/adapter/delivery/daemon"
 	"usb-quic/internal/adapter/logging"
 	"usb-quic/internal/config"
+	runtimedaemon "usb-quic/internal/daemon"
+	"usb-quic/internal/transport"
 )
+
+const (
+	daemonTransportTCP        = "tcp"
+	daemonTransportQUICClient = "quic-client"
+	daemonTransportQUICServer = "quic-server"
+	devNextProto              = "usb-quic-dev"
+	devRSAKeyBits             = 2048
+)
+
+var errDevTLSRequired = errors.New("dev insecure tls is required for current quic transport")
+var errUnknownTransportMode = errors.New("unknown daemon transport mode")
 
 // Streams contains process streams used by commands.
 type Streams struct {
@@ -76,6 +101,7 @@ func execute(
 		fx.NopLogger,
 		fx.Supply(streams),
 		fx.Provide(newLogLevel),
+		fx.Provide(newLogger),
 		fx.Provide(newDaemonRun),
 		fx.Provide(commandProvider),
 		fx.Populate(&command),
@@ -100,6 +126,10 @@ func newLogLevel() *logging.LevelVar {
 	return logging.NewVerboseLevel(false)
 }
 
+func newLogger(streams Streams, level *logging.LevelVar) *logging.Logger {
+	return logging.NewTextLogger(streams.Stderr, level)
+}
+
 func newRootCommand(streams Streams, level *logging.LevelVar) *cobra.Command {
 	runtime := cli.Runtime{
 		LogLevel: level,
@@ -113,10 +143,156 @@ func newRootCommand(streams Streams, level *logging.LevelVar) *cobra.Command {
 	)
 }
 
-func newDaemonRun() daemon.RunFunc {
-	return func(_ context.Context, _ config.Daemon) error {
-		return daemon.ErrNotImplemented
+func newDaemonRun(logger *logging.Logger) daemon.RunFunc {
+	return func(ctx context.Context, cfg config.Daemon) error {
+		return runDaemon(ctx, cfg, logger)
 	}
+}
+
+func runDaemon(ctx context.Context, cfg config.Daemon, logger *logging.Logger) error {
+	switch cfg.TransportMode {
+	case "", daemonTransportTCP:
+		err := runtimedaemon.New(cfg, logger).Run(ctx)
+		if err != nil {
+			return fmt.Errorf("run tcp daemon: %w", err)
+		}
+
+		return nil
+	case daemonTransportQUICClient:
+		return runQUICClientDaemon(ctx, cfg, logger)
+	case daemonTransportQUICServer:
+		return runQUICServerDaemon(ctx, cfg, logger)
+	default:
+		return fmt.Errorf("%w %q", errUnknownTransportMode, cfg.TransportMode)
+	}
+}
+
+func runQUICClientDaemon(ctx context.Context, cfg config.Daemon, logger *logging.Logger) error {
+	tlsConfig, err := clientTLSConfig(cfg)
+	if err != nil {
+		return err
+	}
+
+	streamOpener := transport.NewQUICDialStreamOpener(cfg.QUICAddr, tlsConfig, nil)
+
+	err = runtimedaemon.New(cfg, logger, runtimedaemon.WithStreamOpener(streamOpener)).Run(ctx)
+	if err != nil {
+		return fmt.Errorf("run quic client daemon: %w", err)
+	}
+
+	return nil
+}
+
+func runQUICServerDaemon(ctx context.Context, cfg config.Daemon, logger *logging.Logger) error {
+	tlsConfig, err := serverTLSConfig(cfg)
+	if err != nil {
+		return err
+	}
+
+	listener, err := quic.ListenAddr(cfg.QUICListen, tlsConfig, nil)
+	if err != nil {
+		return fmt.Errorf("listen quic %s: %w", cfg.QUICListen, err)
+	}
+	defer func() {
+		_ = listener.Close()
+	}()
+
+	logger.Info(
+		"quic daemon listening",
+		slog.String("quic_listen", listener.Addr().String()),
+		slog.String("tcp_upstream", cfg.Upstream),
+	)
+
+	go func() {
+		<-ctx.Done()
+
+		_ = listener.Close()
+	}()
+
+	upstream := transport.NewTCPStreamOpener(cfg.Upstream)
+
+	err = runtimedaemon.New(cfg, logger, runtimedaemon.WithStreamOpener(upstream)).ServeQUIC(ctx, listener)
+	if err != nil {
+		return fmt.Errorf("run quic server daemon: %w", err)
+	}
+
+	return nil
+}
+
+func clientTLSConfig(cfg config.Daemon) (*tls.Config, error) {
+	if !cfg.DevInsecureTLS {
+		return nil, errDevTLSRequired
+	}
+
+	//nolint:exhaustruct // Dev-only TLS config sets only fields needed by quic-go.
+	return &tls.Config{
+		InsecureSkipVerify: true, //nolint:gosec // Explicit dev-only smoke-test mode.
+		NextProtos:         []string{devNextProto},
+	}, nil
+}
+
+func serverTLSConfig(cfg config.Daemon) (*tls.Config, error) {
+	if !cfg.DevInsecureTLS {
+		return nil, errDevTLSRequired
+	}
+
+	cert, err := devSelfSignedCert()
+	if err != nil {
+		return nil, err
+	}
+
+	//nolint:exhaustruct // Dev-only TLS config sets only fields needed by quic-go.
+	return &tls.Config{
+		Certificates: []tls.Certificate{cert},
+		NextProtos:   []string{devNextProto},
+	}, nil
+}
+
+func devSelfSignedCert() (tls.Certificate, error) {
+	key, err := rsa.GenerateKey(rand.Reader, devRSAKeyBits)
+	if err != nil {
+		return tls.Certificate{}, fmt.Errorf("generate dev tls key: %w", err)
+	}
+
+	//nolint:exhaustruct // Dev certificate sets only fields required for a local handshake.
+	template := x509.Certificate{
+		SerialNumber: big.NewInt(time.Now().UnixNano()),
+		Subject: pkix.Name{ //nolint:exhaustruct // CommonName is enough for the dev certificate.
+			CommonName: "usb-quic-dev",
+		},
+		NotBefore: time.Now().Add(-time.Minute),
+		NotAfter:  time.Now().Add(time.Hour),
+		KeyUsage:  x509.KeyUsageDigitalSignature,
+		DNSNames:  []string{"localhost"},
+		IPAddresses: []net.IP{
+			net.ParseIP("127.0.0.1"),
+			net.ParseIP("::1"),
+		},
+	}
+
+	certDER, err := x509.CreateCertificate(rand.Reader, &template, &template, &key.PublicKey, key)
+	if err != nil {
+		return tls.Certificate{}, fmt.Errorf("create dev tls certificate: %w", err)
+	}
+
+	keyDER := x509.MarshalPKCS1PrivateKey(key)
+	certPEM := pem.EncodeToMemory(&pem.Block{
+		Type:    "CERTIFICATE",
+		Headers: map[string]string{},
+		Bytes:   certDER,
+	})
+	keyPEM := pem.EncodeToMemory(&pem.Block{
+		Type:    "RSA PRIVATE KEY",
+		Headers: map[string]string{},
+		Bytes:   keyDER,
+	})
+
+	cert, err := tls.X509KeyPair(certPEM, keyPEM)
+	if err != nil {
+		return tls.Certificate{}, fmt.Errorf("parse dev tls certificate: %w", err)
+	}
+
+	return cert, nil
 }
 
 func newDaemonCommand(

@@ -8,8 +8,8 @@ The product goal is not only to tunnel USB/IP traffic. The CLI must become a
 practical replacement for the legacy `usbip` user workflow, suitable for use
 through a shell alias, wrapper, or drop-in binary strategy.
 
-Current status: CLI and daemon compatibility scaffolds. QUIC transport and TLS
-are not implemented in the current codebase.
+Current status: CLI compatibility scaffolds plus an early daemon TCP forwarding
+prototype. QUIC transport and TLS are not implemented in the current codebase.
 
 ## Compatibility Goal
 
@@ -153,9 +153,10 @@ usage: usbipd [options]
 		Show version.
 ```
 
-All daemon flags are parsed. The daemon runtime behavior is not implemented
-yet, so invoking it without `--help` or `--version` returns
-`usbipd: daemon is not implemented yet`.
+All daemon flags are parsed. The daemon runtime can listen for local TCP
+sessions and forward each accepted session through the current stream transport
+adapter. The adapter is TCP-backed today; QUIC transport and TLS are still not
+implemented.
 
 ## Observed Legacy USB/IP API
 
@@ -211,7 +212,7 @@ usage: usbip unbind <args>
 - `attach` is only a CLI stub and does not perform legacy attach behavior.
 - `list -r` is only a CLI stub and does not print remote exportable devices.
 - `list -l`, `list -p`, `list -d`, `detach`, `bind`, `unbind`, and `port` are not implemented.
-- The daemon command parses the observed `usbipd` options, but does not start a service yet.
+- The daemon command starts an early TCP forwarding service, not the final QUIC proxy yet.
 - QUIC transport and TLS configuration are not implemented in the current codebase.
 
 ## Implementation Direction
@@ -225,3 +226,64 @@ The user-facing command API should preserve legacy command semantics. The proxy
 startup and QUIC transport details should be hidden behind the compatible
 workflow where possible. Daemon behavior belongs in the separate daemon
 entrypoint, not in the operator-facing `usb-quic` command.
+
+## Manual TCP-to-QUIC Smoke Test
+
+The daemon entrypoint includes hidden `usb-quic` flags for checking the current
+transport path locally without changing the usbipd-like help output. The smoke
+test uses an ephemeral self-signed certificate and disables client certificate
+verification, so do not use it as production TLS configuration.
+
+Run these in three separate terminals:
+
+```bash
+python3 - <<'PY'
+import socket
+
+sock = socket.socket()
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+sock.bind(("127.0.0.1", 19000))
+sock.listen()
+print("echo upstream listening on 127.0.0.1:19000", flush=True)
+
+while True:
+    conn, addr = sock.accept()
+    print(f"echo accepted {addr}", flush=True)
+    with conn:
+        while data := conn.recv(65536):
+            conn.sendall(data)
+PY
+```
+
+```bash
+GOCACHE=/tmp/usb-quic-go-build-cache go run ./cmd/daemon \
+  --debug \
+  --usb-quic-transport quic-server \
+  --usb-quic-quic-listen 127.0.0.1:14242 \
+  --usb-quic-upstream 127.0.0.1:19000 \
+  --usb-quic-dev-insecure-tls
+```
+
+```bash
+GOCACHE=/tmp/usb-quic-go-build-cache go run ./cmd/daemon \
+  --debug \
+  --tcp-port 13241 \
+  --usb-quic-transport quic-client \
+  --usb-quic-quic-addr 127.0.0.1:14242 \
+  --usb-quic-dev-insecure-tls
+```
+
+Then send data through the TCP entrypoint:
+
+```bash
+printf 'hello over quic\n' | timeout 3 nc 127.0.0.1 13241
+```
+
+Expected output:
+
+```text
+hello over quic
+```
+
+You should also see daemon logs for the TCP client accept, QUIC server listen,
+and tunnel start/stop events on both sides.
