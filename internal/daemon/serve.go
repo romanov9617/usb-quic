@@ -5,11 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"sync"
 
 	"usb-quic/internal/tunnel"
 )
 
-func (daemon *Daemon) serve(ctx context.Context, listener net.Listener) error {
+func (daemon *Daemon) serve(ctx context.Context, listener net.Listener, wg *sync.WaitGroup) error {
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
@@ -22,7 +23,7 @@ func (daemon *Daemon) serve(ctx context.Context, listener net.Listener) error {
 
 		daemon.log.logClientAccepted(conn.RemoteAddr())
 
-		daemon.wg.Go(func() {
+		wg.Go(func() {
 			daemon.handleConnection(ctx, conn)
 		})
 	}
