@@ -132,7 +132,8 @@ func newLogger(streams Streams, level *logging.LevelVar) *logging.Logger {
 
 func newRootCommand(streams Streams, level *logging.LevelVar) *cobra.Command {
 	runtime := cli.Runtime{
-		LogLevel: level,
+		LogLevel:   level,
+		ListRemote: nil,
 	}
 
 	return cli.NewRootCommandWithRuntime(

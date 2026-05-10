@@ -107,7 +107,7 @@ usage: usb-quic [--debug] [--log] [--tcp-port PORT] [version]
 | `help` | нет | Печатает root help. | В основном совместимо на root-уровне. |
 | `attach` | `-r, --remote HOST`; `-b, --busid BUSID`; `-d, --device DEVID` | Возвращает `ErrNotImplemented`. Флаги парсятся, но не реализованы. | Форма интерфейса совпадает с наблюдаемыми legacy flags; поведение не реализовано. |
 | `detach` | `-p, --port PORT` | Возвращает `ErrNotImplemented`. | Не реализовано. |
-| `list` | `-p, --parsable`; `-r, --remote HOST`; `-l, --local`; `-d, --device` | Возвращает `ErrNotImplemented`. Флаги парсятся, но не реализованы. | Форма интерфейса совпадает с наблюдаемыми legacy flags; поведение не реализовано. |
+| `list` | `-p, --parsable`; `-r, --remote HOST`; `-l, --local`; `-d, --device` | `list -r HOST` отправляет `OP_REQ_DEVLIST` на `HOST:--tcp-port` и печатает экспортируемые устройства. Остальные режимы `list` возвращают `ErrNotImplemented`. | Remote list частично реализован; local, parsable и device modes не реализованы. |
 | `bind` | `-b, --busid BUSID` | Возвращает `ErrNotImplemented`. | Не реализовано. |
 | `unbind` | `-b, --busid BUSID` | Возвращает `ErrNotImplemented`. | Не реализовано. |
 | `port` | нет | Возвращает `ErrNotImplemented`. | Не реализовано. |
@@ -211,7 +211,7 @@ usage: usbip unbind <args>
 
 - `attach` пока не требует и не использует `--busid` / `--device`.
 - `attach` является только CLI-заглушкой и не выполняет legacy attach behavior.
-- `list -r` является только CLI-заглушкой и не выводит remote exportable devices.
+- `list -r` выводит remote exportable devices, но имена vendor/product пока являются placeholder-текстом до добавления USB ID database.
 - `list -l`, `list -p`, `list -d`, `detach`, `bind`, `unbind` и `port` не реализованы.
 - Daemon command запускает ранний TCP forwarding service, но еще не финальный QUIC proxy.
 - QUIC transport и TLS configuration в текущем коде не реализованы.

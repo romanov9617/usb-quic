@@ -106,7 +106,7 @@ usage: usb-quic [--debug] [--log] [--tcp-port PORT] [version]
 | `help` | none | Prints root help. | Mostly compatible at root level. |
 | `attach` | `-r, --remote HOST`; `-b, --busid BUSID`; `-d, --device DEVID` | Returns `ErrNotImplemented`. Flags are parsed but not implemented. | Interface shape matches the observed legacy flags; behavior is not implemented. |
 | `detach` | `-p, --port PORT` | Returns `ErrNotImplemented`. | Not implemented. |
-| `list` | `-p, --parsable`; `-r, --remote HOST`; `-l, --local`; `-d, --device` | Returns `ErrNotImplemented`. Flags are parsed but not implemented. | Interface shape matches the observed legacy flags; behavior is not implemented. |
+| `list` | `-p, --parsable`; `-r, --remote HOST`; `-l, --local`; `-d, --device` | `list -r HOST` sends `OP_REQ_DEVLIST` to `HOST:--tcp-port` and prints exported devices. Other list modes return `ErrNotImplemented`. | Remote list is partially implemented; local, parsable, and device modes are not implemented. |
 | `bind` | `-b, --busid BUSID` | Returns `ErrNotImplemented`. | Not implemented. |
 | `unbind` | `-b, --busid BUSID` | Returns `ErrNotImplemented`. | Not implemented. |
 | `port` | none | Returns `ErrNotImplemented`. | Not implemented. |
@@ -210,7 +210,7 @@ usage: usbip unbind <args>
 
 - `attach` does not require or use `--busid` / `--device` yet.
 - `attach` is only a CLI stub and does not perform legacy attach behavior.
-- `list -r` is only a CLI stub and does not print remote exportable devices.
+- `list -r` prints remote exportable devices, but vendor/product names are placeholder text until USB ID database support is added.
 - `list -l`, `list -p`, `list -d`, `detach`, `bind`, `unbind`, and `port` are not implemented.
 - The daemon command starts an early TCP forwarding service, not the final QUIC proxy yet.
 - QUIC transport and TLS configuration are not implemented in the current codebase.

@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+
+	domainusbip "usb-quic/internal/domain/usbip"
 )
 
 type attachOptions struct {
@@ -26,6 +28,23 @@ type listOptions struct {
 type deviceOptions struct {
 	busid string
 }
+
+const (
+	usbClassDefinedAtInterface = 0x00
+	usbClassCommunications     = 0x02
+	usbClassHID                = 0x03
+	usbClassCDCData            = 0x0a
+	usbClassMiscellaneous      = 0xef
+	usbClassVendorSpecific     = 0xff
+
+	usbSubClassUnknown  = 0x00
+	usbSubClassBoot     = 0x01
+	usbSubClassAbstract = 0x02
+
+	usbProtocolUnknown              = 0x00
+	usbProtocolInterfaceAssociation = 0x01
+	usbProtocolMouse                = 0x02
+)
 
 func newAttachCommand(runtime Runtime, rootOpts *rootOptions) *cobra.Command {
 	opts := attachOptions{
@@ -91,9 +110,9 @@ func newListCommand(runtime Runtime, rootOpts *rootOptions) *cobra.Command {
 		Short: "List exportable or local USB devices",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			_ = cmd
-			_ = runtime
-			_ = rootOpts
+			if opts.remote != "" && !opts.local && !opts.device && !opts.parsable {
+				return runListRemote(cmd, runtime, rootOpts, opts)
+			}
 
 			return notImplemented("list")
 		},
@@ -159,6 +178,118 @@ func newPortCommand() *cobra.Command {
 		RunE: func(_ *cobra.Command, _ []string) error {
 			return notImplemented(portCommand)
 		},
+	}
+}
+
+func runListRemote(cmd *cobra.Command, runtime Runtime, rootOpts *rootOptions, opts listOptions) error {
+	devices, err := runtime.ListRemote(cmd.Context(), domainusbip.Endpoint{
+		Host: opts.remote,
+		Port: rootOpts.tcpPort,
+	})
+	if err != nil {
+		return fmt.Errorf("list remote devices from %s: %w", opts.remote, err)
+	}
+
+	writeListRemoteOutput(cmd, opts.remote, devices)
+
+	return nil
+}
+
+func writeListRemoteOutput(cmd *cobra.Command, remote string, devices []domainusbip.Device) {
+	if len(devices) == 0 {
+		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "usbip: info: no exportable devices found on %s\n", remote)
+
+		return
+	}
+
+	_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Exportable USB devices")
+	_, _ = fmt.Fprintln(cmd.OutOrStdout(), "======================")
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), " - %s\n", remote)
+
+	for _, device := range devices {
+		writeDevice(cmd, device)
+	}
+}
+
+func writeDevice(cmd *cobra.Command, device domainusbip.Device) {
+	_, _ = fmt.Fprintf(
+		cmd.OutOrStdout(),
+		"        %s: unknown vendor : unknown product (%04x:%04x)\n",
+		device.BusID,
+		device.IDVendor,
+		device.IDProduct,
+	)
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "           : %s\n", device.Path)
+	_, _ = fmt.Fprintf(
+		cmd.OutOrStdout(),
+		"           : %s (%02x/%02x/%02x)\n",
+		usbClassDescription(device.BDeviceClass, device.BDeviceSubClass, device.BDeviceProtocol),
+		device.BDeviceClass,
+		device.BDeviceSubClass,
+		device.BDeviceProtocol,
+	)
+
+	for index, iface := range device.Interfaces {
+		_, _ = fmt.Fprintf(
+			cmd.OutOrStdout(),
+			"           :  %d - %s (%02x/%02x/%02x)\n",
+			index,
+			usbClassDescription(iface.Class, iface.SubClass, iface.Protocol),
+			iface.Class,
+			iface.SubClass,
+			iface.Protocol,
+		)
+	}
+}
+
+func usbClassDescription(class, subclass, protocol uint8) string {
+	if class == usbClassDefinedAtInterface && subclass == usbSubClassUnknown && protocol == usbProtocolUnknown {
+		return "(Defined at Interface level)"
+	}
+
+	return fmt.Sprintf("%s / %s / %s", usbClassName(class), usbSubClassName(subclass), usbProtocolName(protocol))
+}
+
+func usbClassName(class uint8) string {
+	switch class {
+	case usbClassCommunications:
+		return "Communications"
+	case usbClassHID:
+		return "Human Interface Device"
+	case usbClassCDCData:
+		return "CDC Data"
+	case usbClassMiscellaneous:
+		return "Miscellaneous Device"
+	case usbClassVendorSpecific:
+		return "Vendor Specific Class"
+	default:
+		return "unknown class"
+	}
+}
+
+func usbSubClassName(subclass uint8) string {
+	switch subclass {
+	case usbSubClassUnknown:
+		return "unknown subclass"
+	case usbSubClassBoot:
+		return "Boot Interface Subclass"
+	case usbSubClassAbstract:
+		return "Abstract (modem)"
+	default:
+		return "unknown subclass"
+	}
+}
+
+func usbProtocolName(protocol uint8) string {
+	switch protocol {
+	case usbProtocolUnknown:
+		return "unknown protocol"
+	case usbProtocolInterfaceAssociation:
+		return "Interface Association"
+	case usbProtocolMouse:
+		return "Mouse"
+	default:
+		return "unknown protocol"
 	}
 }
 
