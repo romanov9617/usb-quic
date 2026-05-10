@@ -231,7 +231,7 @@ proxy и детали QUIC transport должны быть скрыты за с�
 где это возможно. Daemon behavior должен находиться в отдельном daemon
 entrypoint, а не в operator-facing команде `usb-quic`.
 
-## Ручная проверка TCP-to-QUIC transport
+## Ручная проверка `usb-quic list -r` с настоящим `usbipd`
 
 Daemon entrypoint содержит скрытые `usb-quic` flags для локальной проверки
 текущего transport path без изменения usbipd-like help output. Smoke test
@@ -244,113 +244,12 @@ certificate verification, поэтому это не production TLS configuratio
 make build
 ```
 
-Запустите в трех отдельных терминалах:
-
-```bash
-python3 - <<'PY'
-import socket
-
-sock = socket.socket()
-sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-sock.bind(("127.0.0.1", 19000))
-sock.listen()
-print("echo upstream listening on 127.0.0.1:19000", flush=True)
-
-while True:
-    conn, addr = sock.accept()
-    print(f"echo accepted {addr}", flush=True)
-    with conn:
-        while data := conn.recv(65536):
-            conn.sendall(data)
-PY
-```
-
-```bash
-./dist/daemon \
-  --debug \
-  --usb-quic-transport quic-server \
-  --usb-quic-quic-listen 127.0.0.1:14242 \
-  --usb-quic-upstream 127.0.0.1:19000 \
-  --usb-quic-dev-insecure-tls
-```
-
-```bash
-./dist/daemon \
-  --debug \
-  --tcp-port 13241 \
-  --usb-quic-transport quic-client \
-  --usb-quic-quic-addr 127.0.0.1:14242 \
-  --usb-quic-dev-insecure-tls
-```
-
-Затем отправьте данные в TCP entrypoint:
-
-```bash
-printf 'hello over quic\n' | timeout 3 nc 127.0.0.1 13241
-```
-
-Ожидаемый вывод:
-
-```text
-hello over quic
-```
-
-В логах daemon должны быть события TCP client accept, QUIC server listen и
-tunnel start/stop на обеих сторонах.
-
-## Ручная проверка `usb-quic list -r`
-
-Эта проверка проходит первый USB/IP command path end to end:
+Эта проверка проходит первый USB/IP command path end to end с настоящим
+`usbipd`:
 
 ```text
 usb-quic list -r -> local TCP -> QUIC stream -> TCP upstream
 ```
-
-Fake upstream ниже отвечает пустым `OP_REP_DEVLIST`, поэтому для проверки не
-нужны настоящий `usbipd`, kernel modules или root privileges.
-
-Запустите в трех отдельных терминалах:
-
-```bash
-python3 scripts/fake_usbipd_devlist.py
-```
-
-```bash
-./dist/daemon \
-  --debug \
-  --usb-quic-transport quic-server \
-  --usb-quic-quic-listen 127.0.0.1:14242 \
-  --usb-quic-upstream 127.0.0.1:19000 \
-  --usb-quic-dev-insecure-tls
-```
-
-```bash
-./dist/daemon \
-  --debug \
-  --tcp-port 13241 \
-  --usb-quic-transport quic-client \
-  --usb-quic-quic-addr 127.0.0.1:14242 \
-  --usb-quic-dev-insecure-tls
-```
-
-Затем запустите CLI через client-side TCP entrypoint:
-
-```bash
-./dist/usb-quic \
-  --tcp-port 13241 \
-  list -r 127.0.0.1
-```
-
-Ожидаемый вывод:
-
-```text
-usbip: info: no exportable devices found on 127.0.0.1
-```
-
-## Ручная проверка `usb-quic list -r` с настоящим `usbipd`
-
-После успешной проверки fake upstream направьте QUIC server на настоящий
-`usbipd` вместо `scripts/fake_usbipd_devlist.py`.
 
 На машине, к которой подключено USB-устройство:
 

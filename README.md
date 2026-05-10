@@ -229,7 +229,7 @@ startup and QUIC transport details should be hidden behind the compatible
 workflow where possible. Daemon behavior belongs in the separate daemon
 entrypoint, not in the operator-facing `usb-quic` command.
 
-## Manual TCP-to-QUIC Smoke Test
+## Manual `usb-quic list -r` With Real `usbipd`
 
 The daemon entrypoint includes hidden `usb-quic` flags for checking the current
 transport path locally without changing the usbipd-like help output. The smoke
@@ -242,113 +242,11 @@ Build the binaries first:
 make build
 ```
 
-Run these in three separate terminals:
-
-```bash
-python3 - <<'PY'
-import socket
-
-sock = socket.socket()
-sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-sock.bind(("127.0.0.1", 19000))
-sock.listen()
-print("echo upstream listening on 127.0.0.1:19000", flush=True)
-
-while True:
-    conn, addr = sock.accept()
-    print(f"echo accepted {addr}", flush=True)
-    with conn:
-        while data := conn.recv(65536):
-            conn.sendall(data)
-PY
-```
-
-```bash
-./dist/daemon \
-  --debug \
-  --usb-quic-transport quic-server \
-  --usb-quic-quic-listen 127.0.0.1:14242 \
-  --usb-quic-upstream 127.0.0.1:19000 \
-  --usb-quic-dev-insecure-tls
-```
-
-```bash
-./dist/daemon \
-  --debug \
-  --tcp-port 13241 \
-  --usb-quic-transport quic-client \
-  --usb-quic-quic-addr 127.0.0.1:14242 \
-  --usb-quic-dev-insecure-tls
-```
-
-Then send data through the TCP entrypoint:
-
-```bash
-printf 'hello over quic\n' | timeout 3 nc 127.0.0.1 13241
-```
-
-Expected output:
-
-```text
-hello over quic
-```
-
-You should also see daemon logs for the TCP client accept, QUIC server listen,
-and tunnel start/stop events on both sides.
-
-## Manual `usb-quic list -r` Smoke Test
-
-This checks the first USB/IP command path end to end:
+This checks the first USB/IP command path end to end with a real `usbipd`:
 
 ```text
 usb-quic list -r -> local TCP -> QUIC stream -> TCP upstream
 ```
-
-The fake upstream below replies with an empty `OP_REP_DEVLIST`, so it does not
-require a real `usbipd`, kernel modules, or root privileges.
-
-Run these in three separate terminals:
-
-```bash
-python3 scripts/fake_usbipd_devlist.py
-```
-
-```bash
-./dist/daemon \
-  --debug \
-  --usb-quic-transport quic-server \
-  --usb-quic-quic-listen 127.0.0.1:14242 \
-  --usb-quic-upstream 127.0.0.1:19000 \
-  --usb-quic-dev-insecure-tls
-```
-
-```bash
-./dist/daemon \
-  --debug \
-  --tcp-port 13241 \
-  --usb-quic-transport quic-client \
-  --usb-quic-quic-addr 127.0.0.1:14242 \
-  --usb-quic-dev-insecure-tls
-```
-
-Then run the CLI through the client-side TCP entrypoint:
-
-```bash
-./dist/usb-quic \
-  --tcp-port 13241 \
-  list -r 127.0.0.1
-```
-
-Expected output:
-
-```text
-usbip: info: no exportable devices found on 127.0.0.1
-```
-
-## Manual `usb-quic list -r` With Real `usbipd`
-
-After the fake upstream smoke test works, point the QUIC server at a real
-`usbipd` instead of `scripts/fake_usbipd_devlist.py`.
 
 On the machine that has the USB device:
 
