@@ -77,10 +77,10 @@ jobs:
           VERSION: ${{ steps.version.outputs.value }}
         run: |
           mkdir -p dist
-          for bin in server client; do
+          for bin in usb-quic daemon; do
             go build \
               -trimpath \
-              -ldflags "-s -w -X usb-quic/internal/adapter/delivery/cli.version=${VERSION}" \
+              -ldflags "-s -w -X usb-quic/internal/adapter/delivery/cli.version=${VERSION} -X usb-quic/internal/adapter/delivery/daemon.version=${VERSION}" \
               -o "dist/${bin}" \
               "./cmd/${bin}"
           done
@@ -90,5 +90,5 @@ jobs:
         with:
           name: usb-quic-linux-amd64
           path: |
-            dist/server
-            dist/client
+            dist/usb-quic
+            dist/daemon
