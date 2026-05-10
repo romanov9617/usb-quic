@@ -174,6 +174,15 @@ func runQUICClientDaemon(ctx context.Context, cfg config.Daemon, logger *logging
 	}
 
 	streamOpener := transport.NewQUICDialStreamOpener(cfg.QUICAddr, tlsConfig, nil)
+	stopClose := context.AfterFunc(ctx, func() {
+		_ = streamOpener.Close()
+	})
+
+	defer func() {
+		stopClose()
+
+		_ = streamOpener.Close()
+	}()
 
 	err = runtimedaemon.New(cfg, logger, runtimedaemon.WithStreamOpener(streamOpener)).Run(ctx)
 	if err != nil {

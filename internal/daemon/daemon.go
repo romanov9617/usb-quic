@@ -8,6 +8,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"sync"
 
 	"usb-quic/internal/adapter/logging"
 	"usb-quic/internal/config"
@@ -25,6 +26,7 @@ type Daemon struct {
 	log          *logger
 	listen       listenFunc
 	streamOpener transport.StreamOpener
+	wg           sync.WaitGroup
 }
 
 // New creates a daemon runtime.
@@ -42,6 +44,7 @@ func New(cfg config.Daemon, logger *logging.Logger, opts ...Option) *Daemon {
 		log:          newLogger(logger),
 		listen:       listen,
 		streamOpener: transport.NewTCPStreamOpener(defaultUpstreamAddress()),
+		wg:           sync.WaitGroup{},
 	}
 
 	if options.listener != nil {
@@ -86,6 +89,7 @@ func (daemon *Daemon) Run(ctx context.Context) error {
 		return err
 	}
 
+	daemon.wg.Wait()
 	daemon.log.logDaemonStopped(ctx.Err())
 
 	return nil
