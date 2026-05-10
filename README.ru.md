@@ -288,3 +288,71 @@ hello over quic
 
 В логах daemon должны быть события TCP client accept, QUIC server listen и
 tunnel start/stop на обеих сторонах.
+
+## Ручная проверка `usb-quic list -r`
+
+Эта проверка проходит первый USB/IP command path end to end:
+
+```text
+usb-quic list -r -> local TCP -> QUIC stream -> TCP upstream
+```
+
+Fake upstream ниже отвечает пустым `OP_REP_DEVLIST`, поэтому для проверки не
+нужны настоящий `usbipd`, kernel modules или root privileges.
+
+Запустите в трех отдельных терминалах:
+
+```bash
+python3 - <<'PY'
+import socket
+
+OP_REQ_DEVLIST = bytes.fromhex("0111800500000000")
+OP_REP_DEVLIST_EMPTY = bytes.fromhex("011100050000000000000000")
+
+sock = socket.socket()
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+sock.bind(("127.0.0.1", 19000))
+sock.listen()
+print("fake usbipd listening on 127.0.0.1:19000", flush=True)
+
+while True:
+    conn, addr = sock.accept()
+    with conn:
+        request = conn.recv(len(OP_REQ_DEVLIST))
+        print(f"accepted {addr}, request={request.hex()}", flush=True)
+        if request == OP_REQ_DEVLIST:
+            conn.sendall(OP_REP_DEVLIST_EMPTY)
+PY
+```
+
+```bash
+GOCACHE=/tmp/usb-quic-go-build-cache go run ./cmd/daemon \
+  --debug \
+  --usb-quic-transport quic-server \
+  --usb-quic-quic-listen 127.0.0.1:14242 \
+  --usb-quic-upstream 127.0.0.1:19000 \
+  --usb-quic-dev-insecure-tls
+```
+
+```bash
+GOCACHE=/tmp/usb-quic-go-build-cache go run ./cmd/daemon \
+  --debug \
+  --tcp-port 13241 \
+  --usb-quic-transport quic-client \
+  --usb-quic-quic-addr 127.0.0.1:14242 \
+  --usb-quic-dev-insecure-tls
+```
+
+Затем запустите CLI через client-side TCP entrypoint:
+
+```bash
+GOCACHE=/tmp/usb-quic-go-build-cache go run ./cmd/usb-quic \
+  --tcp-port 13241 \
+  list -r 127.0.0.1
+```
+
+Ожидаемый вывод:
+
+```text
+usbip: info: no exportable devices found on 127.0.0.1
+```
