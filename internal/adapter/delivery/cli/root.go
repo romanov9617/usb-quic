@@ -2,6 +2,7 @@
 package cli
 
 import (
+	"context"
 	"fmt"
 	"io"
 
@@ -29,13 +30,18 @@ type rootOptions struct {
 
 // Runtime contains CLI runtime dependencies.
 type Runtime struct {
-	LogLevel *logging.LevelVar
+	LogLevel   *logging.LevelVar
+	ListRemote ListRemoteFunc
 }
+
+// ListRemoteFunc lists devices exported by a remote USB/IP endpoint.
+type ListRemoteFunc func(ctx context.Context, endpoint domainusbip.Endpoint) ([]domainusbip.Device, error)
 
 // NewRootCommand builds a cobra command tree compatible with the usbip CLI shape.
 func NewRootCommand(stdin io.Reader, stdout, stderr io.Writer) *cobra.Command {
 	runtime := Runtime{
-		LogLevel: nil,
+		LogLevel:   nil,
+		ListRemote: domainusbip.ListExportedDevices,
 	}
 
 	return NewRootCommandWithRuntime(stdin, stdout, stderr, runtime)
@@ -43,6 +49,10 @@ func NewRootCommand(stdin io.Reader, stdout, stderr io.Writer) *cobra.Command {
 
 // NewRootCommandWithRuntime builds a cobra command tree with runtime dependencies.
 func NewRootCommandWithRuntime(stdin io.Reader, stdout, stderr io.Writer, runtime Runtime) *cobra.Command {
+	if runtime.ListRemote == nil {
+		runtime.ListRemote = domainusbip.ListExportedDevices
+	}
+
 	opts := rootOptions{
 		debug:   false,
 		log:     false,

@@ -8,8 +8,8 @@
 практической заменой legacy workflow команды `usbip`, пригодной для
 использования через shell alias, wrapper или стратегию drop-in binary.
 
-Текущий статус: CLI-каркас совместимости и ранний daemon TCP forwarding
-prototype. QUIC transport и TLS в текущем коде не реализованы.
+Текущий статус: CLI-каркас совместимости, TCP forwarding и experimental QUIC
+client/server transport. Production TLS configuration еще предстоит добавить.
 
 ## Цель Совместимости
 
@@ -107,7 +107,7 @@ usage: usb-quic [--debug] [--log] [--tcp-port PORT] [version]
 | `help` | нет | Печатает root help. | В основном совместимо на root-уровне. |
 | `attach` | `-r, --remote HOST`; `-b, --busid BUSID`; `-d, --device DEVID` | Возвращает `ErrNotImplemented`. Флаги парсятся, но не реализованы. | Форма интерфейса совпадает с наблюдаемыми legacy flags; поведение не реализовано. |
 | `detach` | `-p, --port PORT` | Возвращает `ErrNotImplemented`. | Не реализовано. |
-| `list` | `-p, --parsable`; `-r, --remote HOST`; `-l, --local`; `-d, --device` | Возвращает `ErrNotImplemented`. Флаги парсятся, но не реализованы. | Форма интерфейса совпадает с наблюдаемыми legacy flags; поведение не реализовано. |
+| `list` | `-p, --parsable`; `-r, --remote HOST`; `-l, --local`; `-d, --device` | `list -r HOST` отправляет `OP_REQ_DEVLIST` на `HOST:--tcp-port` и печатает экспортируемые устройства. Остальные режимы `list` возвращают `ErrNotImplemented`. | Remote list частично реализован; local, parsable и device modes не реализованы. |
 | `bind` | `-b, --busid BUSID` | Возвращает `ErrNotImplemented`. | Не реализовано. |
 | `unbind` | `-b, --busid BUSID` | Возвращает `ErrNotImplemented`. | Не реализовано. |
 | `port` | нет | Возвращает `ErrNotImplemented`. | Не реализовано. |
@@ -211,10 +211,13 @@ usage: usbip unbind <args>
 
 - `attach` пока не требует и не использует `--busid` / `--device`.
 - `attach` является только CLI-заглушкой и не выполняет legacy attach behavior.
-- `list -r` является только CLI-заглушкой и не выводит remote exportable devices.
+- `list -r` выводит remote exportable devices, но имена vendor/product пока являются placeholder-текстом до добавления USB ID database.
 - `list -l`, `list -p`, `list -d`, `detach`, `bind`, `unbind` и `port` не реализованы.
-- Daemon command запускает ранний TCP forwarding service, но еще не финальный QUIC proxy.
-- QUIC transport и TLS configuration в текущем коде не реализованы.
+- Daemon command поддерживает TCP forwarding и experimental QUIC client/server
+  transport modes.
+- QUIC smoke tests сейчас используют ephemeral self-signed certificate с
+  `--usb-quic-dev-insecure-tls`; production TLS configuration еще предстоит
+  добавить.
 
 ## Направление Реализации
 
@@ -228,45 +231,56 @@ proxy и детали QUIC transport должны быть скрыты за с�
 где это возможно. Daemon behavior должен находиться в отдельном daemon
 entrypoint, а не в operator-facing команде `usb-quic`.
 
-## Ручная проверка TCP-to-QUIC transport
+## Ручная проверка `usb-quic list -r` с настоящим `usbipd`
 
 Daemon entrypoint содержит скрытые `usb-quic` flags для локальной проверки
 текущего transport path без изменения usbipd-like help output. Smoke test
 использует ephemeral self-signed certificate и отключает client-side
 certificate verification, поэтому это не production TLS configuration.
 
-Запустите в трех отдельных терминалах:
+Сначала соберите binaries:
 
 ```bash
-python3 - <<'PY'
-import socket
-
-sock = socket.socket()
-sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-sock.bind(("127.0.0.1", 19000))
-sock.listen()
-print("echo upstream listening on 127.0.0.1:19000", flush=True)
-
-while True:
-    conn, addr = sock.accept()
-    print(f"echo accepted {addr}", flush=True)
-    with conn:
-        while data := conn.recv(65536):
-            conn.sendall(data)
-PY
+make build
 ```
 
+Эта проверка проходит первый USB/IP command path end to end с настоящим
+`usbipd`:
+
+```text
+usb-quic list -r -> local TCP -> QUIC stream -> TCP upstream
+```
+
+На машине, к которой подключено USB-устройство:
+
 ```bash
-GOCACHE=/tmp/usb-quic-go-build-cache go run ./cmd/daemon \
+sudo modprobe usbip-host
+sudo usbipd -D
+```
+
+В другом терминале на этой же машине посмотрите локальные USB devices и
+экспортируйте нужное:
+
+```bash
+usbip list -l
+sudo usbip bind -b <BUSID>
+```
+
+Запустите QUIC server с upstream на настоящий порт `usbipd`:
+
+```bash
+./dist/daemon \
   --debug \
   --usb-quic-transport quic-server \
   --usb-quic-quic-listen 127.0.0.1:14242 \
-  --usb-quic-upstream 127.0.0.1:19000 \
+  --usb-quic-upstream 127.0.0.1:3240 \
   --usb-quic-dev-insecure-tls
 ```
 
+Запустите client-side TCP entrypoint:
+
 ```bash
-GOCACHE=/tmp/usb-quic-go-build-cache go run ./cmd/daemon \
+./dist/daemon \
   --debug \
   --tcp-port 13241 \
   --usb-quic-transport quic-client \
@@ -274,17 +288,12 @@ GOCACHE=/tmp/usb-quic-go-build-cache go run ./cmd/daemon \
   --usb-quic-dev-insecure-tls
 ```
 
-Затем отправьте данные в TCP entrypoint:
+Затем запросите exported devices через tunnel:
 
 ```bash
-printf 'hello over quic\n' | timeout 3 nc 127.0.0.1 13241
+./dist/usb-quic \
+  --tcp-port 13241 \
+  list -r 127.0.0.1
 ```
 
-Ожидаемый вывод:
-
-```text
-hello over quic
-```
-
-В логах daemon должны быть события TCP client accept, QUIC server listen и
-tunnel start/stop на обеих сторонах.
+В выводе должны появиться устройства, exported настоящим `usbipd`.
