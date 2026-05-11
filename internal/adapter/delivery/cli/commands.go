@@ -166,7 +166,15 @@ func newListCommand(runtime Runtime, rootOpts *rootOptions) *cobra.Command {
 		Short: "List exportable or local USB devices",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			if opts.remote != "" && !opts.local && !opts.device && !opts.parsable {
+			if opts.device && opts.remote == "" && !opts.local {
+				return runListDevice(cmd)
+			}
+
+			if opts.local && opts.remote == "" && !opts.device {
+				return runListLocal(cmd, runtime, opts)
+			}
+
+			if opts.remote != "" && !opts.local && !opts.device {
 				return runListRemote(cmd, runtime, rootOpts, opts)
 			}
 
@@ -274,6 +282,21 @@ func runPort(cmd *cobra.Command, runtime Runtime) error {
 	return nil
 }
 
+func runListDevice(_ *cobra.Command) error {
+	return nil
+}
+
+func runListLocal(cmd *cobra.Command, runtime Runtime, opts listOptions) error {
+	devices, err := runtime.ListLocal(cmd.Context())
+	if err != nil {
+		return fmt.Errorf("list local devices: %w", err)
+	}
+
+	writeListDevicesOutput(cmd, devices, opts.parsable)
+
+	return nil
+}
+
 func runListRemote(cmd *cobra.Command, runtime Runtime, rootOpts *rootOptions, opts listOptions) error {
 	devices, err := runtime.ListRemote(cmd.Context(), adapterusbip.Endpoint{
 		Host: opts.remote,
@@ -283,9 +306,51 @@ func runListRemote(cmd *cobra.Command, runtime Runtime, rootOpts *rootOptions, o
 		return fmt.Errorf("list remote devices from %s: %w", opts.remote, err)
 	}
 
+	if opts.parsable {
+		writeParsableDevices(cmd, devices)
+
+		return nil
+	}
+
 	writeListRemoteOutput(cmd, opts.remote, devices)
 
 	return nil
+}
+
+func writeListDevicesOutput(cmd *cobra.Command, devices []adapterusbip.Device, parsable bool) {
+	if parsable {
+		writeParsableDevices(cmd, devices)
+
+		return
+	}
+
+	for _, device := range devices {
+		_, _ = fmt.Fprintf(
+			cmd.OutOrStdout(),
+			" - busid %s (%04x:%04x)\n",
+			device.BusID,
+			device.IDVendor,
+			device.IDProduct,
+		)
+		_, _ = fmt.Fprintf(
+			cmd.OutOrStdout(),
+			"   unknown vendor : unknown product (%04x:%04x)\n\n",
+			device.IDVendor,
+			device.IDProduct,
+		)
+	}
+}
+
+func writeParsableDevices(cmd *cobra.Command, devices []adapterusbip.Device) {
+	for _, device := range devices {
+		_, _ = fmt.Fprintf(
+			cmd.OutOrStdout(),
+			"busid=%s#usbid=%04x:%04x#\n",
+			device.BusID,
+			device.IDVendor,
+			device.IDProduct,
+		)
+	}
 }
 
 func writeListRemoteOutput(cmd *cobra.Command, remote string, devices []adapterusbip.Device) {
