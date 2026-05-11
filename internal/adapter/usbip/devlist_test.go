@@ -8,13 +8,18 @@ import (
 	"testing"
 )
 
+const (
+	testDevicePath = "/sys/devices/pci0000:00/usb1/1-1"
+	testBusID      = "1-1"
+)
+
 func TestListExportedDevicesConn(t *testing.T) {
 	t.Parallel()
 
 	conn := &recordingReadWriter{
 		reader: bytes.NewReader(devlistReply(t, Device{
-			Path:                "/sys/devices/pci0000:00/usb1/1-1",
-			BusID:               "1-1",
+			Path:                testDevicePath,
+			BusID:               testBusID,
 			Busnum:              1,
 			Devnum:              2,
 			Speed:               2,
@@ -49,7 +54,7 @@ func TestListExportedDevicesConn(t *testing.T) {
 	}
 
 	device := devices[0]
-	if device.BusID != "1-1" || device.Path != "/sys/devices/pci0000:00/usb1/1-1" {
+	if device.BusID != testBusID || device.Path != testDevicePath {
 		t.Fatalf("unexpected device identity: %+v", device)
 	}
 
@@ -130,26 +135,26 @@ func writeDevice(t *testing.T, writer io.Writer, device Device) {
 
 	var data [deviceInfoSize]byte
 
-	copy(data[0:devicePathSize], device.Path)
-	copy(data[devicePathSize:devicePathSize+deviceBusIDSize], device.BusID)
-	binary.BigEndian.PutUint32(data[288:292], device.Busnum)
-	binary.BigEndian.PutUint32(data[292:296], device.Devnum)
-	binary.BigEndian.PutUint32(data[296:300], device.Speed)
-	binary.BigEndian.PutUint16(data[300:302], device.IDVendor)
-	binary.BigEndian.PutUint16(data[302:304], device.IDProduct)
-	binary.BigEndian.PutUint16(data[304:306], device.BCDDevice)
-	data[306] = device.BDeviceClass
-	data[307] = device.BDeviceSubClass
-	data[308] = device.BDeviceProtocol
-	data[309] = device.BConfigurationValue
-	data[310] = device.BNumConfigurations
+	copy(data[devicePathOffset:deviceBusIDOffset], device.Path)
+	copy(data[deviceBusIDOffset:deviceBusnumOffset], device.BusID)
+	binary.BigEndian.PutUint32(data[deviceBusnumOffset:deviceDevnumOffset], device.Busnum)
+	binary.BigEndian.PutUint32(data[deviceDevnumOffset:deviceSpeedOffset], device.Devnum)
+	binary.BigEndian.PutUint32(data[deviceSpeedOffset:deviceIDVendorOffset], device.Speed)
+	binary.BigEndian.PutUint16(data[deviceIDVendorOffset:deviceIDProductOffset], device.IDVendor)
+	binary.BigEndian.PutUint16(data[deviceIDProductOffset:deviceBCDDeviceOffset], device.IDProduct)
+	binary.BigEndian.PutUint16(data[deviceBCDDeviceOffset:deviceClassOffset], device.BCDDevice)
+	data[deviceClassOffset] = device.BDeviceClass
+	data[deviceSubClassOffset] = device.BDeviceSubClass
+	data[deviceProtocolOffset] = device.BDeviceProtocol
+	data[deviceConfigOffset] = device.BConfigurationValue
+	data[deviceNumConfigsOffset] = device.BNumConfigurations
 
 	interfaceCount, ok := checkedUint8(t, len(device.Interfaces))
 	if !ok {
 		return
 	}
 
-	data[311] = interfaceCount
+	data[deviceNumIfacesOffset] = interfaceCount
 
 	_, err := writer.Write(data[:])
 	if err != nil {

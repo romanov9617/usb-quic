@@ -11,14 +11,46 @@ import (
 )
 
 const (
+	commonHeaderSize = 8
+
 	protocolVersion = 0x0111
 	opReqDevlist    = 0x8005
 	opRepDevlist    = 0x0005
 
-	devicePathSize  = 256
-	deviceBusIDSize = 32
-	deviceInfoSize  = devicePathSize + deviceBusIDSize + 4 + 4 + 4 + 2 + 2 + 2 + 1 + 1 + 1 + 1 + 1 + 1
-	interfaceSize   = 4
+	// OP_REP_DEVLIST carries a fixed-width usbip_usb_device record followed by
+	// one fixed-width usbip_usb_interface record per interface.
+	devicePathSize       = 256
+	deviceBusIDSize      = 32
+	deviceBusnumSize     = 4
+	deviceDevnumSize     = 4
+	deviceSpeedSize      = 4
+	deviceIDVendorSize   = 2
+	deviceIDProductSize  = 2
+	deviceBCDDeviceSize  = 2
+	deviceClassSize      = 1
+	deviceSubClassSize   = 1
+	deviceProtocolSize   = 1
+	deviceConfigSize     = 1
+	deviceNumConfigsSize = 1
+	deviceNumIfacesSize  = 1
+
+	devicePathOffset       = 0
+	deviceBusIDOffset      = devicePathOffset + devicePathSize
+	deviceBusnumOffset     = deviceBusIDOffset + deviceBusIDSize
+	deviceDevnumOffset     = deviceBusnumOffset + deviceBusnumSize
+	deviceSpeedOffset      = deviceDevnumOffset + deviceDevnumSize
+	deviceIDVendorOffset   = deviceSpeedOffset + deviceSpeedSize
+	deviceIDProductOffset  = deviceIDVendorOffset + deviceIDVendorSize
+	deviceBCDDeviceOffset  = deviceIDProductOffset + deviceIDProductSize
+	deviceClassOffset      = deviceBCDDeviceOffset + deviceBCDDeviceSize
+	deviceSubClassOffset   = deviceClassOffset + deviceClassSize
+	deviceProtocolOffset   = deviceSubClassOffset + deviceSubClassSize
+	deviceConfigOffset     = deviceProtocolOffset + deviceProtocolSize
+	deviceNumConfigsOffset = deviceConfigOffset + deviceConfigSize
+	deviceNumIfacesOffset  = deviceNumConfigsOffset + deviceNumConfigsSize
+	deviceInfoSize         = deviceNumIfacesOffset + deviceNumIfacesSize
+
+	interfaceSize = 4
 )
 
 var (
@@ -133,31 +165,12 @@ func readDevlistReply(reader io.Reader) ([]Device, error) {
 }
 
 func readDevice(reader io.Reader) (Device, error) {
-	var data [deviceInfoSize]byte
-
-	_, err := io.ReadFull(reader, data[:])
+	device, err := readDeviceInfo(reader)
 	if err != nil {
-		return Device{}, fmt.Errorf("read usbip device: %w", err)
+		return Device{}, err
 	}
 
-	device := Device{
-		Path:                cString(data[0:devicePathSize]),
-		BusID:               cString(data[devicePathSize : devicePathSize+deviceBusIDSize]),
-		Busnum:              binary.BigEndian.Uint32(data[288:292]),
-		Devnum:              binary.BigEndian.Uint32(data[292:296]),
-		Speed:               binary.BigEndian.Uint32(data[296:300]),
-		IDVendor:            binary.BigEndian.Uint16(data[300:302]),
-		IDProduct:           binary.BigEndian.Uint16(data[302:304]),
-		BCDDevice:           binary.BigEndian.Uint16(data[304:306]),
-		BDeviceClass:        data[306],
-		BDeviceSubClass:     data[307],
-		BDeviceProtocol:     data[308],
-		BConfigurationValue: data[309],
-		BNumConfigurations:  data[310],
-		Interfaces:          nil,
-	}
-
-	interfaceCount := int(data[311])
+	interfaceCount := cap(device.Interfaces)
 	device.Interfaces = make([]Interface, 0, interfaceCount)
 
 	for range interfaceCount {
@@ -168,6 +181,37 @@ func readDevice(reader io.Reader) (Device, error) {
 
 		device.Interfaces = append(device.Interfaces, iface)
 	}
+
+	return device, nil
+}
+
+func readDeviceInfo(reader io.Reader) (Device, error) {
+	var data [deviceInfoSize]byte
+
+	_, err := io.ReadFull(reader, data[:])
+	if err != nil {
+		return Device{}, fmt.Errorf("read usbip device: %w", err)
+	}
+
+	device := Device{
+		Path:                cString(data[devicePathOffset:deviceBusIDOffset]),
+		BusID:               cString(data[deviceBusIDOffset:deviceBusnumOffset]),
+		Busnum:              binary.BigEndian.Uint32(data[deviceBusnumOffset:deviceDevnumOffset]),
+		Devnum:              binary.BigEndian.Uint32(data[deviceDevnumOffset:deviceSpeedOffset]),
+		Speed:               binary.BigEndian.Uint32(data[deviceSpeedOffset:deviceIDVendorOffset]),
+		IDVendor:            binary.BigEndian.Uint16(data[deviceIDVendorOffset:deviceIDProductOffset]),
+		IDProduct:           binary.BigEndian.Uint16(data[deviceIDProductOffset:deviceBCDDeviceOffset]),
+		BCDDevice:           binary.BigEndian.Uint16(data[deviceBCDDeviceOffset:deviceClassOffset]),
+		BDeviceClass:        data[deviceClassOffset],
+		BDeviceSubClass:     data[deviceSubClassOffset],
+		BDeviceProtocol:     data[deviceProtocolOffset],
+		BConfigurationValue: data[deviceConfigOffset],
+		BNumConfigurations:  data[deviceNumConfigsOffset],
+		Interfaces:          nil,
+	}
+
+	interfaceCount := int(data[deviceNumIfacesOffset])
+	device.Interfaces = make([]Interface, 0, interfaceCount)
 
 	return device, nil
 }

@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"usb-quic/internal/adapter/logging"
-	domainusbip "usb-quic/internal/domain/usbip"
+	adapterusbip "usb-quic/internal/adapter/usbip"
 )
 
 const testBusID = "1-1"
@@ -75,9 +75,6 @@ func TestUSBIPCompatibleCommandsParse(t *testing.T) {
 		name string
 		args []string
 	}{
-		{name: attachCommand, args: []string{attachCommand, "-r", localTCPHost, "-b", testBusID}},
-		{name: "attach device", args: []string{attachCommand, "-r", localTCPHost, "-d", "0"}},
-		{name: detachCommand, args: []string{detachCommand, "-p", "0"}},
 		{name: "list local", args: []string{listCommand, "-l"}},
 		{name: "list device", args: []string{listCommand, "-d"}},
 		{name: bindCommand, args: []string{bindCommand, "-b", testBusID}},
@@ -100,19 +97,169 @@ func TestUSBIPCompatibleCommandsParse(t *testing.T) {
 	}
 }
 
+func TestAttachRemoteCommand(t *testing.T) {
+	t.Parallel()
+
+	runtime := Runtime{
+		LogLevel: logging.NewDefaultLevel(),
+		AttachRemote: func(_ context.Context, endpoint adapterusbip.Endpoint, busid string) (int, error) {
+			if endpoint.Host != localTCPHost || endpoint.Port != 4321 {
+				t.Fatalf("endpoint=%+v, want host=%s port=4321", endpoint, localTCPHost)
+			}
+
+			if busid != testBusID {
+				t.Fatalf("busid=%q, want %q", busid, testBusID)
+			}
+
+			return 0, nil
+		},
+		DetachRemote: nil,
+		ListRemote: func(context.Context, adapterusbip.Endpoint) ([]adapterusbip.Device, error) {
+			t.Fatal("ListRemote must not be called by attach")
+
+			return nil, nil
+		},
+	}
+
+	cmd := NewRootCommandWithRuntime(nil, bytes.NewBuffer(nil), bytes.NewBuffer(nil), runtime)
+	cmd.SetArgs([]string{"--tcp-port", "4321", attachCommand, "-r", localTCPHost, "-b", testBusID})
+
+	err := cmd.Execute()
+	if err != nil {
+		t.Fatalf("execute attach: %v", err)
+	}
+}
+
+func TestAttachRemoteCommandAcceptsDeviceFlagAsBusID(t *testing.T) {
+	t.Parallel()
+
+	runtime := Runtime{
+		LogLevel: logging.NewDefaultLevel(),
+		AttachRemote: func(_ context.Context, _ adapterusbip.Endpoint, busid string) (int, error) {
+			if busid != "0" {
+				t.Fatalf("busid=%q, want %q", busid, "0")
+			}
+
+			return 0, nil
+		},
+		DetachRemote: nil,
+		ListRemote:   nil,
+	}
+
+	cmd := NewRootCommandWithRuntime(nil, bytes.NewBuffer(nil), bytes.NewBuffer(nil), runtime)
+	cmd.SetArgs([]string{attachCommand, "-r", localTCPHost, "-d", "0"})
+
+	err := cmd.Execute()
+	if err != nil {
+		t.Fatalf("execute attach: %v", err)
+	}
+}
+
+func TestAttachRemoteCommandRequiresRemoteAndBusID(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		args []string
+		want string
+	}{
+		{
+			name: "remote",
+			args: []string{attachCommand, "-b", testBusID},
+			want: "attach: remote host is required",
+		},
+		{
+			name: "busid",
+			args: []string{attachCommand, "-r", localTCPHost},
+			want: "attach: busid is required",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			cmd := NewRootCommandWithRuntime(nil, bytes.NewBuffer(nil), bytes.NewBuffer(nil), Runtime{
+				LogLevel: logging.NewDefaultLevel(),
+				AttachRemote: func(context.Context, adapterusbip.Endpoint, string) (int, error) {
+					t.Fatal("AttachRemote must not be called for invalid args")
+
+					return 0, nil
+				},
+				DetachRemote: nil,
+				ListRemote:   nil,
+			})
+			cmd.SetArgs(tt.args)
+
+			err := cmd.Execute()
+			if err == nil || err.Error() != tt.want {
+				t.Fatalf("err=%v, want %q", err, tt.want)
+			}
+		})
+	}
+}
+
+func TestDetachRemoteCommand(t *testing.T) {
+	t.Parallel()
+
+	runtime := Runtime{
+		LogLevel:     logging.NewDefaultLevel(),
+		AttachRemote: nil,
+		DetachRemote: func(_ context.Context, port int) error {
+			if port != 3 {
+				t.Fatalf("port=%d, want 3", port)
+			}
+
+			return nil
+		},
+		ListRemote: nil,
+	}
+
+	cmd := NewRootCommandWithRuntime(nil, bytes.NewBuffer(nil), bytes.NewBuffer(nil), runtime)
+	cmd.SetArgs([]string{detachCommand, "-p", "3"})
+
+	err := cmd.Execute()
+	if err != nil {
+		t.Fatalf("execute detach: %v", err)
+	}
+}
+
+func TestDetachRemoteCommandRequiresPort(t *testing.T) {
+	t.Parallel()
+
+	cmd := NewRootCommandWithRuntime(nil, bytes.NewBuffer(nil), bytes.NewBuffer(nil), Runtime{
+		LogLevel:     logging.NewDefaultLevel(),
+		AttachRemote: nil,
+		DetachRemote: func(context.Context, int) error {
+			t.Fatal("DetachRemote must not be called for invalid args")
+
+			return nil
+		},
+		ListRemote: nil,
+	})
+	cmd.SetArgs([]string{detachCommand})
+
+	err := cmd.Execute()
+	if !errors.Is(err, ErrDetachPortRequired) {
+		t.Fatalf("err=%v, want %v", err, ErrDetachPortRequired)
+	}
+}
+
 func TestListRemoteCommand(t *testing.T) {
 	t.Parallel()
 
 	var stdout bytes.Buffer
 
 	runtime := Runtime{
-		LogLevel: logging.NewDefaultLevel(),
-		ListRemote: func(_ context.Context, endpoint domainusbip.Endpoint) ([]domainusbip.Device, error) {
+		LogLevel:     logging.NewDefaultLevel(),
+		AttachRemote: nil,
+		DetachRemote: nil,
+		ListRemote: func(_ context.Context, endpoint adapterusbip.Endpoint) ([]adapterusbip.Device, error) {
 			if endpoint.Host != localTCPHost || endpoint.Port != 4321 {
 				t.Fatalf("endpoint=%+v, want host=%s port=4321", endpoint, localTCPHost)
 			}
 
-			return []domainusbip.Device{
+			return []adapterusbip.Device{
 				{
 					Path:                "/sys/bus/usb/devices/1-1",
 					BusID:               testBusID,
@@ -127,7 +274,7 @@ func TestListRemoteCommand(t *testing.T) {
 					BDeviceProtocol:     0x01,
 					BConfigurationValue: 0,
 					BNumConfigurations:  0,
-					Interfaces: []domainusbip.Interface{
+					Interfaces: []adapterusbip.Interface{
 						{Class: 0x02, SubClass: 0x02, Protocol: 0x00},
 					},
 				},
@@ -163,8 +310,10 @@ func TestListRemoteCommandNoDevices(t *testing.T) {
 	var stdout bytes.Buffer
 
 	runtime := Runtime{
-		LogLevel: logging.NewDefaultLevel(),
-		ListRemote: func(context.Context, domainusbip.Endpoint) ([]domainusbip.Device, error) {
+		LogLevel:     logging.NewDefaultLevel(),
+		AttachRemote: nil,
+		DetachRemote: nil,
+		ListRemote: func(context.Context, adapterusbip.Endpoint) ([]adapterusbip.Device, error) {
 			return nil, nil
 		},
 	}

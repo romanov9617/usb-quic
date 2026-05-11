@@ -2,10 +2,11 @@ package cli
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/spf13/cobra"
 
-	domainusbip "usb-quic/internal/domain/usbip"
+	adapterusbip "usb-quic/internal/adapter/usbip"
 )
 
 type attachOptions struct {
@@ -59,11 +60,7 @@ func newAttachCommand(runtime Runtime, rootOpts *rootOptions) *cobra.Command {
 		Short: "Attach a remote USB device",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			_ = cmd
-			_ = runtime
-			_ = rootOpts
-
-			return notImplemented("attach")
+			return runAttach(cmd, runtime, rootOpts, opts)
 		},
 	}
 
@@ -75,7 +72,32 @@ func newAttachCommand(runtime Runtime, rootOpts *rootOptions) *cobra.Command {
 	return cmd
 }
 
-func newDetachCommand() *cobra.Command {
+func runAttach(cmd *cobra.Command, runtime Runtime, rootOpts *rootOptions, opts attachOptions) error {
+	busid := opts.busid
+	if busid == "" {
+		busid = opts.device
+	}
+
+	if opts.remote == "" {
+		return ErrAttachRemoteRequired
+	}
+
+	if busid == "" {
+		return ErrAttachBusIDRequired
+	}
+
+	_, err := runtime.AttachRemote(cmd.Context(), adapterusbip.Endpoint{
+		Host: opts.remote,
+		Port: rootOpts.tcpPort,
+	}, busid)
+	if err != nil {
+		return fmt.Errorf("attach remote device %s from %s: %w", busid, opts.remote, err)
+	}
+
+	return nil
+}
+
+func newDetachCommand(runtime Runtime) *cobra.Command {
 	opts := detachOptions{
 		port: "",
 	}
@@ -85,8 +107,8 @@ func newDetachCommand() *cobra.Command {
 		Use:   "detach <args>",
 		Short: "Detach a remote USB device",
 		Args:  cobra.NoArgs,
-		RunE: func(_ *cobra.Command, _ []string) error {
-			return notImplemented("detach")
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return runDetach(cmd, runtime, opts)
 		},
 	}
 
@@ -94,6 +116,24 @@ func newDetachCommand() *cobra.Command {
 	cmd.SetHelpTemplate(detachHelpTemplate())
 
 	return cmd
+}
+
+func runDetach(cmd *cobra.Command, runtime Runtime, opts detachOptions) error {
+	if opts.port == "" {
+		return ErrDetachPortRequired
+	}
+
+	port, err := strconv.Atoi(opts.port)
+	if err != nil {
+		return fmt.Errorf("detach: parse port %q: %w", opts.port, err)
+	}
+
+	err = runtime.DetachRemote(cmd.Context(), port)
+	if err != nil {
+		return fmt.Errorf("detach remote device from port %d: %w", port, err)
+	}
+
+	return nil
 }
 
 func newListCommand(runtime Runtime, rootOpts *rootOptions) *cobra.Command {
@@ -182,7 +222,7 @@ func newPortCommand() *cobra.Command {
 }
 
 func runListRemote(cmd *cobra.Command, runtime Runtime, rootOpts *rootOptions, opts listOptions) error {
-	devices, err := runtime.ListRemote(cmd.Context(), domainusbip.Endpoint{
+	devices, err := runtime.ListRemote(cmd.Context(), adapterusbip.Endpoint{
 		Host: opts.remote,
 		Port: rootOpts.tcpPort,
 	})
@@ -195,7 +235,7 @@ func runListRemote(cmd *cobra.Command, runtime Runtime, rootOpts *rootOptions, o
 	return nil
 }
 
-func writeListRemoteOutput(cmd *cobra.Command, remote string, devices []domainusbip.Device) {
+func writeListRemoteOutput(cmd *cobra.Command, remote string, devices []adapterusbip.Device) {
 	if len(devices) == 0 {
 		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "usbip: info: no exportable devices found on %s\n", remote)
 
@@ -211,7 +251,7 @@ func writeListRemoteOutput(cmd *cobra.Command, remote string, devices []domainus
 	}
 }
 
-func writeDevice(cmd *cobra.Command, device domainusbip.Device) {
+func writeDevice(cmd *cobra.Command, device adapterusbip.Device) {
 	_, _ = fmt.Fprintf(
 		cmd.OutOrStdout(),
 		"        %s: unknown vendor : unknown product (%04x:%04x)\n",

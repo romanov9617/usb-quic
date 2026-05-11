@@ -9,8 +9,8 @@ import (
 	"github.com/spf13/cobra"
 
 	"usb-quic/internal/adapter/logging"
+	adapterusbip "usb-quic/internal/adapter/usbip"
 	"usb-quic/internal/config"
-	domainusbip "usb-quic/internal/domain/usbip"
 )
 
 const appName = "usbipd"
@@ -71,7 +71,7 @@ func NewRootCommandWithRuntime(stdin io.Reader, stdout, stderr io.Writer, runtim
 		pidFile:        "",
 		quicAddr:       defaultQUICAddress,
 		quicListen:     defaultQUICAddress,
-		tcpPort:        domainusbip.DefaultPort,
+		tcpPort:        adapterusbip.DefaultPort,
 		transportMode:  defaultTransportMode,
 		upstream:       defaultUpstream,
 		version:        false,
@@ -116,7 +116,7 @@ func registerFlags(cmd *cobra.Command, opts *rootOptions) {
 	cmd.Flags().BoolVarP(&opts.daemon, "daemon", "D", false, "run as a daemon process")
 	cmd.Flags().BoolVarP(&opts.debug, "debug", "d", false, "print debugging information")
 	cmd.Flags().StringVarP(&opts.pidFile, "pid", "P", "", "write process id to file")
-	cmd.Flags().IntVarP(&opts.tcpPort, "tcp-port", "t", domainusbip.DefaultPort, "listen on TCP/IP port")
+	cmd.Flags().IntVarP(&opts.tcpPort, "tcp-port", "t", adapterusbip.DefaultPort, "listen on TCP/IP port")
 	cmd.Flags().BoolVarP(&opts.version, "version", "v", false, "show version")
 	cmd.Flags().StringVar(
 		&opts.transportMode,
