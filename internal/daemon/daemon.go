@@ -11,8 +11,8 @@ import (
 	"sync"
 
 	"usb-quic/internal/adapter/logging"
+	adapterusbip "usb-quic/internal/adapter/usbip"
 	"usb-quic/internal/config"
-	domainusbip "usb-quic/internal/domain/usbip"
 	"usb-quic/internal/transport"
 )
 
@@ -111,7 +111,7 @@ func listen(ctx context.Context, cfg config.Daemon) (net.Listener, error) {
 }
 
 func defaultUpstreamAddress() string {
-	return net.JoinHostPort("127.0.0.1", strconv.Itoa(domainusbip.DefaultPort))
+	return net.JoinHostPort("127.0.0.1", strconv.Itoa(adapterusbip.DefaultPort))
 }
 
 func listenAddress(cfg config.Daemon) string {

@@ -105,8 +105,8 @@ usage: usb-quic [--debug] [--log] [--tcp-port PORT] [version]
 | --- | --- | --- | --- |
 | `version` | нет | Печатает build-time version или `dev` в локальных сборках. | Частично: формат вывода не совпадает с `usbip (usbip-utils 2.0)`. |
 | `help` | нет | Печатает root help. | В основном совместимо на root-уровне. |
-| `attach` | `-r, --remote HOST`; `-b, --busid BUSID`; `-d, --device DEVID` | Возвращает `ErrNotImplemented`. Флаги парсятся, но не реализованы. | Форма интерфейса совпадает с наблюдаемыми legacy flags; поведение не реализовано. |
-| `detach` | `-p, --port PORT` | Возвращает `ErrNotImplemented`. | Не реализовано. |
+| `attach` | `-r, --remote HOST`; `-b, --busid BUSID`; `-d, --device DEVID` | Отправляет `OP_REQ_IMPORT` на `HOST:--tcp-port`, получает `OP_REP_IMPORT` и подключает импортированный socket к локальному `vhci_hcd` через sysfs. | Начальная Linux-реализация; требует `vhci_hcd` и прав на запись в sysfs attribute `attach`. |
+| `detach` | `-p, --port PORT` | Отключает локальный `vhci_hcd` port через kernel sysfs attribute `detach`. | Начальная Linux-реализация; требует прав на запись в sysfs attribute `detach`. |
 | `list` | `-p, --parsable`; `-r, --remote HOST`; `-l, --local`; `-d, --device` | `list -r HOST` отправляет `OP_REQ_DEVLIST` на `HOST:--tcp-port` и печатает экспортируемые устройства. Остальные режимы `list` возвращают `ErrNotImplemented`. | Remote list частично реализован; local, parsable и device modes не реализованы. |
 | `bind` | `-b, --busid BUSID` | Возвращает `ErrNotImplemented`. | Не реализовано. |
 | `unbind` | `-b, --busid BUSID` | Возвращает `ErrNotImplemented`. | Не реализовано. |
@@ -209,10 +209,10 @@ usage: usbip unbind <args>
 
 ## Текущие Разрывы Совместимости
 
-- `attach` пока не требует и не использует `--busid` / `--device`.
-- `attach` является только CLI-заглушкой и не выполняет legacy attach behavior.
+- `attach` сейчас поддерживает основной remote import path через `vhci_hcd`;
+  `--device` принимается как legacy-compatible alias для import id.
 - `list -r` выводит remote exportable devices, но имена vendor/product пока являются placeholder-текстом до добавления USB ID database.
-- `list -l`, `list -p`, `list -d`, `detach`, `bind`, `unbind` и `port` не реализованы.
+- `list -l`, `list -p`, `list -d`, `bind`, `unbind` и `port` не реализованы.
 - Daemon command поддерживает TCP forwarding и experimental QUIC client/server
   transport modes.
 - QUIC smoke tests сейчас используют ephemeral self-signed certificate с
@@ -249,6 +249,7 @@ make build
 
 ```text
 usb-quic list -r -> local TCP -> QUIC stream -> TCP upstream
+usb-quic attach -r -> local TCP -> QUIC stream -> TCP upstream -> vhci_hcd
 ```
 
 На машине, к которой подключено USB-устройство:
@@ -297,3 +298,20 @@ sudo usbip bind -b <BUSID>
 ```
 
 В выводе должны появиться устройства, exported настоящим `usbipd`.
+
+Чтобы импортировать одно из этих устройств через тот же tunnel, загрузите
+`vhci_hcd` на client-машине и запустите attach с правами, достаточными для
+kernel sysfs attach API:
+
+```bash
+sudo modprobe vhci-hcd
+sudo ./dist/usb-quic \
+  --tcp-port 13241 \
+  attach -r 127.0.0.1 -b <BUSID>
+```
+
+Затем отключите импортированное устройство от выбранного локального vhci port:
+
+```bash
+sudo ./dist/usb-quic detach -p <PORT>
+```

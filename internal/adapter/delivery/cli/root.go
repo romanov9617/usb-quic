@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"usb-quic/internal/adapter/logging"
-	domainusbip "usb-quic/internal/domain/usbip"
+	adapterusbip "usb-quic/internal/adapter/usbip"
 )
 
 const (
@@ -30,18 +30,28 @@ type rootOptions struct {
 
 // Runtime contains CLI runtime dependencies.
 type Runtime struct {
-	LogLevel   *logging.LevelVar
-	ListRemote ListRemoteFunc
+	LogLevel     *logging.LevelVar
+	AttachRemote AttachRemoteFunc
+	DetachRemote DetachRemoteFunc
+	ListRemote   ListRemoteFunc
 }
 
+// AttachRemoteFunc imports a remote USB/IP device into local vhci_hcd.
+type AttachRemoteFunc func(ctx context.Context, endpoint adapterusbip.Endpoint, busid string) (int, error)
+
+// DetachRemoteFunc detaches a USB/IP device from local vhci_hcd.
+type DetachRemoteFunc func(ctx context.Context, port int) error
+
 // ListRemoteFunc lists devices exported by a remote USB/IP endpoint.
-type ListRemoteFunc func(ctx context.Context, endpoint domainusbip.Endpoint) ([]domainusbip.Device, error)
+type ListRemoteFunc func(ctx context.Context, endpoint adapterusbip.Endpoint) ([]adapterusbip.Device, error)
 
 // NewRootCommand builds a cobra command tree compatible with the usbip CLI shape.
 func NewRootCommand(stdin io.Reader, stdout, stderr io.Writer) *cobra.Command {
 	runtime := Runtime{
-		LogLevel:   nil,
-		ListRemote: domainusbip.ListExportedDevices,
+		LogLevel:     nil,
+		AttachRemote: attachRemote,
+		DetachRemote: detachRemote,
+		ListRemote:   adapterusbip.ListExportedDevices,
 	}
 
 	return NewRootCommandWithRuntime(stdin, stdout, stderr, runtime)
@@ -49,14 +59,22 @@ func NewRootCommand(stdin io.Reader, stdout, stderr io.Writer) *cobra.Command {
 
 // NewRootCommandWithRuntime builds a cobra command tree with runtime dependencies.
 func NewRootCommandWithRuntime(stdin io.Reader, stdout, stderr io.Writer, runtime Runtime) *cobra.Command {
+	if runtime.AttachRemote == nil {
+		runtime.AttachRemote = attachRemote
+	}
+
+	if runtime.DetachRemote == nil {
+		runtime.DetachRemote = detachRemote
+	}
+
 	if runtime.ListRemote == nil {
-		runtime.ListRemote = domainusbip.ListExportedDevices
+		runtime.ListRemote = adapterusbip.ListExportedDevices
 	}
 
 	opts := rootOptions{
 		debug:   false,
 		log:     false,
-		tcpPort: domainusbip.DefaultPort,
+		tcpPort: adapterusbip.DefaultPort,
 	}
 
 	//nolint:exhaustruct // Cobra commands intentionally set only behavior relevant to this CLI.
@@ -86,7 +104,7 @@ func NewRootCommandWithRuntime(stdin io.Reader, stdout, stderr io.Writer, runtim
 
 	cmd.AddCommand(
 		newAttachCommand(runtime, &opts),
-		newDetachCommand(),
+		newDetachCommand(runtime),
 		newListCommand(runtime, &opts),
 		newBindCommand(),
 		newUnbindCommand(),
