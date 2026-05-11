@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	adapterusbip "usb-quic/internal/adapter/usbip"
+	"usb-quic/internal/adapter/vhci"
 )
 
 type attachOptions struct {
@@ -45,6 +46,21 @@ const (
 	usbProtocolUnknown              = 0x00
 	usbProtocolInterfaceAssociation = 0x01
 	usbProtocolMouse                = 0x02
+
+	usbipStatusDeviceAvailable  = 1
+	usbipStatusDeviceInUse      = 2
+	usbipStatusDeviceError      = 3
+	usbipStatusPortAvailable    = 4
+	usbipStatusPortInitializing = 5
+	usbipStatusPortInUse        = 6
+	usbipStatusPortError        = 7
+
+	usbSpeedUnknown  = 0
+	usbSpeedLow      = 1
+	usbSpeedFull     = 2
+	usbSpeedHigh     = 3
+	usbSpeedWireless = 4
+	usbSpeedSuper    = 5
 )
 
 func newAttachCommand(runtime Runtime, rootOpts *rootOptions) *cobra.Command {
@@ -209,16 +225,27 @@ func newUnbindCommand() *cobra.Command {
 	return cmd
 }
 
-func newPortCommand() *cobra.Command {
+func newPortCommand(runtime Runtime) *cobra.Command {
 	//nolint:exhaustruct // Cobra commands intentionally set only behavior relevant to this CLI.
 	return &cobra.Command{
 		Use:   portCommand,
 		Short: "Show imported USB devices",
 		Args:  cobra.NoArgs,
-		RunE: func(_ *cobra.Command, _ []string) error {
-			return notImplemented(portCommand)
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return runPort(cmd, runtime)
 		},
 	}
+}
+
+func runPort(cmd *cobra.Command, runtime Runtime) error {
+	devices, err := runtime.ListImported(cmd.Context())
+	if err != nil {
+		return fmt.Errorf("list imported devices: %w", err)
+	}
+
+	writePortOutput(cmd, devices)
+
+	return nil
 }
 
 func runListRemote(cmd *cobra.Command, runtime Runtime, rootOpts *rootOptions, opts listOptions) error {
@@ -279,6 +306,92 @@ func writeDevice(cmd *cobra.Command, device adapterusbip.Device) {
 			iface.SubClass,
 			iface.Protocol,
 		)
+	}
+}
+
+func writePortOutput(cmd *cobra.Command, devices []vhci.ImportedDevice) {
+	_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Imported USB devices")
+	_, _ = fmt.Fprintln(cmd.OutOrStdout(), "====================")
+
+	for _, device := range devices {
+		_, _ = fmt.Fprintf(
+			cmd.OutOrStdout(),
+			"Port %02d: <%s> at %s\n",
+			device.Port,
+			portStatusDescription(device.Status),
+			usbSpeedDescription(device.Speed),
+		)
+		_, _ = fmt.Fprintf(
+			cmd.OutOrStdout(),
+			"       unknown vendor : unknown product (%04x:%04x)\n",
+			device.IDVendor,
+			device.IDProduct,
+		)
+
+		if device.RemoteHost != "" && device.RemotePort != "" && device.RemoteBusID != "" {
+			_, _ = fmt.Fprintf(
+				cmd.OutOrStdout(),
+				"%10s -> usbip://%s:%s/%s\n",
+				device.LocalBusID,
+				device.RemoteHost,
+				device.RemotePort,
+				device.RemoteBusID,
+			)
+		} else {
+			_, _ = fmt.Fprintf(
+				cmd.OutOrStdout(),
+				"%10s -> unknown host, remote port and remote busid\n",
+				device.LocalBusID,
+			)
+		}
+
+		_, _ = fmt.Fprintf(
+			cmd.OutOrStdout(),
+			"%10s -> remote bus/dev %03d/%03d\n",
+			" ",
+			device.RemoteBus,
+			device.RemoteDev,
+		)
+	}
+}
+
+func portStatusDescription(status int) string {
+	switch status {
+	case usbipStatusDeviceAvailable:
+		return "Device Available"
+	case usbipStatusDeviceInUse:
+		return "Device in Use"
+	case usbipStatusDeviceError:
+		return "Device Error"
+	case usbipStatusPortAvailable:
+		return "Port Available"
+	case usbipStatusPortInitializing:
+		return "Port Initializing"
+	case usbipStatusPortInUse:
+		return "Port in Use"
+	case usbipStatusPortError:
+		return "Port Error"
+	default:
+		return "Unknown Status"
+	}
+}
+
+func usbSpeedDescription(speed int) string {
+	switch speed {
+	case usbSpeedUnknown:
+		return "Unknown Speed"
+	case usbSpeedLow:
+		return "Low Speed(1.5Mbps)"
+	case usbSpeedFull:
+		return "Full Speed(12Mbps)"
+	case usbSpeedHigh:
+		return "High Speed(480Mbps)"
+	case usbSpeedWireless:
+		return "Wireless"
+	case usbSpeedSuper:
+		return "Super Speed(5000Mbps)"
+	default:
+		return "Unknown Speed"
 	}
 }
 

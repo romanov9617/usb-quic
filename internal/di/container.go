@@ -135,6 +135,7 @@ func newRootCommand(streams Streams, level *logging.LevelVar) *cobra.Command {
 		LogLevel:     level,
 		AttachRemote: nil,
 		DetachRemote: nil,
+		ListImported: nil,
 		ListRemote:   nil,
 	}
 

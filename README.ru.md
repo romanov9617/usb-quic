@@ -110,7 +110,7 @@ usage: usb-quic [--debug] [--log] [--tcp-port PORT] [version]
 | `list` | `-p, --parsable`; `-r, --remote HOST`; `-l, --local`; `-d, --device` | `list -r HOST` отправляет `OP_REQ_DEVLIST` на `HOST:--tcp-port` и печатает экспортируемые устройства. Остальные режимы `list` возвращают `ErrNotImplemented`. | Remote list частично реализован; local, parsable и device modes не реализованы. |
 | `bind` | `-b, --busid BUSID` | Возвращает `ErrNotImplemented`. | Не реализовано. |
 | `unbind` | `-b, --busid BUSID` | Возвращает `ErrNotImplemented`. | Не реализовано. |
-| `port` | нет | Возвращает `ErrNotImplemented`. | Не реализовано. |
+| `port` | нет | Печатает импортированные USB/IP устройства из `vhci_hcd`, используя тот же sysfs status и `/var/run/vhci_hcd/portN` record API, что и `usbip port`. | Начальная Linux-реализация; имена vendor/product остаются placeholder-текстом до добавления USB ID database. |
 
 ## Текущий Daemon API
 
@@ -212,7 +212,9 @@ usage: usbip unbind <args>
 - `attach` сейчас поддерживает основной remote import path через `vhci_hcd`;
   `--device` принимается как legacy-compatible alias для import id.
 - `list -r` выводит remote exportable devices, но имена vendor/product пока являются placeholder-текстом до добавления USB ID database.
-- `list -l`, `list -p`, `list -d`, `bind`, `unbind` и `port` не реализованы.
+- `port` выводит imported devices, но имена vendor/product пока являются
+  placeholder-текстом до добавления USB ID database.
+- `list -l`, `list -p`, `list -d`, `bind` и `unbind` не реализованы.
 - Daemon command поддерживает TCP forwarding и experimental QUIC client/server
   transport modes.
 - QUIC smoke tests сейчас используют ephemeral self-signed certificate с
