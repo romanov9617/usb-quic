@@ -8,6 +8,7 @@ import (
 
 	"usb-quic/internal/adapter/logging"
 	adapterusbip "usb-quic/internal/adapter/usbip"
+	"usb-quic/internal/adapter/vhci"
 )
 
 const testBusID = "1-1"
@@ -79,7 +80,6 @@ func TestUSBIPCompatibleCommandsParse(t *testing.T) {
 		{name: "list device", args: []string{listCommand, "-d"}},
 		{name: bindCommand, args: []string{bindCommand, "-b", testBusID}},
 		{name: unbindCommand, args: []string{unbindCommand, "-b", testBusID}},
-		{name: portCommand, args: []string{portCommand}},
 	}
 
 	for _, tt := range tests {
@@ -94,6 +94,88 @@ func TestUSBIPCompatibleCommandsParse(t *testing.T) {
 				t.Fatalf("expected ErrNotImplemented, got %v", err)
 			}
 		})
+	}
+}
+
+func TestPortCommand(t *testing.T) {
+	t.Parallel()
+
+	var stdout bytes.Buffer
+
+	runtime := Runtime{
+		LogLevel:     logging.NewDefaultLevel(),
+		AttachRemote: nil,
+		DetachRemote: nil,
+		ListImported: func(context.Context) ([]vhci.ImportedDevice, error) {
+			return []vhci.ImportedDevice{
+				{
+					Hub:         "hs",
+					Port:        3,
+					Status:      6,
+					Speed:       3,
+					LocalBusID:  "1-1",
+					RemoteHost:  "127.0.0.1",
+					RemotePort:  "3240",
+					RemoteBusID: testBusID,
+					RemoteBus:   1,
+					RemoteDev:   2,
+					IDVendor:    0x2fe3,
+					IDProduct:   0x0001,
+				},
+			}, nil
+		},
+		ListRemote: nil,
+	}
+
+	cmd := NewRootCommandWithRuntime(nil, &stdout, nil, runtime)
+	cmd.SetArgs([]string{portCommand})
+
+	err := cmd.Execute()
+	if err != nil {
+		t.Fatalf("execute port: %v", err)
+	}
+
+	want := `Imported USB devices
+====================
+Port 03: <Port in Use> at High Speed(480Mbps)
+       unknown vendor : unknown product (2fe3:0001)
+       1-1 -> usbip://127.0.0.1:3240/1-1
+           -> remote bus/dev 001/002
+`
+
+	if got := stdout.String(); got != want {
+		t.Fatalf("unexpected output\nwant:\n%s\ngot:\n%s", want, got)
+	}
+}
+
+func TestPortCommandNoDevices(t *testing.T) {
+	t.Parallel()
+
+	var stdout bytes.Buffer
+
+	runtime := Runtime{
+		LogLevel:     logging.NewDefaultLevel(),
+		AttachRemote: nil,
+		DetachRemote: nil,
+		ListImported: func(context.Context) ([]vhci.ImportedDevice, error) {
+			return nil, nil
+		},
+		ListRemote: nil,
+	}
+
+	cmd := NewRootCommandWithRuntime(nil, &stdout, nil, runtime)
+	cmd.SetArgs([]string{portCommand})
+
+	err := cmd.Execute()
+	if err != nil {
+		t.Fatalf("execute port: %v", err)
+	}
+
+	want := `Imported USB devices
+====================
+`
+	if got := stdout.String(); got != want {
+		t.Fatalf("unexpected output: want %q, got %q", want, got)
 	}
 }
 
@@ -114,6 +196,7 @@ func TestAttachRemoteCommand(t *testing.T) {
 			return 0, nil
 		},
 		DetachRemote: nil,
+		ListImported: nil,
 		ListRemote: func(context.Context, adapterusbip.Endpoint) ([]adapterusbip.Device, error) {
 			t.Fatal("ListRemote must not be called by attach")
 
@@ -143,6 +226,7 @@ func TestAttachRemoteCommandAcceptsDeviceFlagAsBusID(t *testing.T) {
 			return 0, nil
 		},
 		DetachRemote: nil,
+		ListImported: nil,
 		ListRemote:   nil,
 	}
 
@@ -187,6 +271,7 @@ func TestAttachRemoteCommandRequiresRemoteAndBusID(t *testing.T) {
 					return 0, nil
 				},
 				DetachRemote: nil,
+				ListImported: nil,
 				ListRemote:   nil,
 			})
 			cmd.SetArgs(tt.args)
@@ -212,7 +297,8 @@ func TestDetachRemoteCommand(t *testing.T) {
 
 			return nil
 		},
-		ListRemote: nil,
+		ListImported: nil,
+		ListRemote:   nil,
 	}
 
 	cmd := NewRootCommandWithRuntime(nil, bytes.NewBuffer(nil), bytes.NewBuffer(nil), runtime)
@@ -235,7 +321,8 @@ func TestDetachRemoteCommandRequiresPort(t *testing.T) {
 
 			return nil
 		},
-		ListRemote: nil,
+		ListImported: nil,
+		ListRemote:   nil,
 	})
 	cmd.SetArgs([]string{detachCommand})
 
@@ -280,6 +367,7 @@ func TestListRemoteCommand(t *testing.T) {
 				},
 			}, nil
 		},
+		ListImported: nil,
 	}
 
 	cmd := NewRootCommandWithRuntime(nil, &stdout, nil, runtime)
@@ -316,6 +404,7 @@ func TestListRemoteCommandNoDevices(t *testing.T) {
 		ListRemote: func(context.Context, adapterusbip.Endpoint) ([]adapterusbip.Device, error) {
 			return nil, nil
 		},
+		ListImported: nil,
 	}
 
 	cmd := NewRootCommandWithRuntime(nil, &stdout, nil, runtime)

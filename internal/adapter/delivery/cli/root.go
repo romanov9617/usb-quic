@@ -10,6 +10,7 @@ import (
 
 	"usb-quic/internal/adapter/logging"
 	adapterusbip "usb-quic/internal/adapter/usbip"
+	"usb-quic/internal/adapter/vhci"
 )
 
 const (
@@ -33,6 +34,7 @@ type Runtime struct {
 	LogLevel     *logging.LevelVar
 	AttachRemote AttachRemoteFunc
 	DetachRemote DetachRemoteFunc
+	ListImported ListImportedFunc
 	ListRemote   ListRemoteFunc
 }
 
@@ -41,6 +43,9 @@ type AttachRemoteFunc func(ctx context.Context, endpoint adapterusbip.Endpoint, 
 
 // DetachRemoteFunc detaches a USB/IP device from local vhci_hcd.
 type DetachRemoteFunc func(ctx context.Context, port int) error
+
+// ListImportedFunc lists USB/IP devices imported into local vhci_hcd.
+type ListImportedFunc func(ctx context.Context) ([]vhci.ImportedDevice, error)
 
 // ListRemoteFunc lists devices exported by a remote USB/IP endpoint.
 type ListRemoteFunc func(ctx context.Context, endpoint adapterusbip.Endpoint) ([]adapterusbip.Device, error)
@@ -51,6 +56,7 @@ func NewRootCommand(stdin io.Reader, stdout, stderr io.Writer) *cobra.Command {
 		LogLevel:     nil,
 		AttachRemote: attachRemote,
 		DetachRemote: detachRemote,
+		ListImported: listImported,
 		ListRemote:   adapterusbip.ListExportedDevices,
 	}
 
@@ -65,6 +71,10 @@ func NewRootCommandWithRuntime(stdin io.Reader, stdout, stderr io.Writer, runtim
 
 	if runtime.DetachRemote == nil {
 		runtime.DetachRemote = detachRemote
+	}
+
+	if runtime.ListImported == nil {
+		runtime.ListImported = listImported
 	}
 
 	if runtime.ListRemote == nil {
@@ -108,7 +118,7 @@ func NewRootCommandWithRuntime(stdin io.Reader, stdout, stderr io.Writer, runtim
 		newListCommand(runtime, &opts),
 		newBindCommand(),
 		newUnbindCommand(),
-		newPortCommand(),
+		newPortCommand(runtime),
 		newVersionCommand(),
 	)
 

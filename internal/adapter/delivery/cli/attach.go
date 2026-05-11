@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"strconv"
 
 	adapterusbip "usb-quic/internal/adapter/usbip"
 	"usb-quic/internal/adapter/vhci"
@@ -43,11 +44,24 @@ func attachRemote(ctx context.Context, endpoint adapterusbip.Endpoint, busid str
 		_ = file.Close()
 	}()
 
-	port, err := vhci.Controller{SysfsRoot: ""}.AttachDevice(file.Fd(), device.Busnum, device.Devnum, device.Speed)
+	controller := vhci.Controller{
+		SysfsRoot: "",
+		RunRoot:   "",
+	}
+
+	port, err := controller.AttachDevice(file.Fd(), device.Busnum, device.Devnum, device.Speed)
 	if err != nil {
 		_ = tcpConn.Close()
 
 		return 0, fmt.Errorf("attach usbip device %s to vhci_hcd: %w", busid, err)
+	}
+
+	err = controller.RecordConnection(port, endpoint.Host, strconv.Itoa(endpoint.Port), busid)
+	if err != nil {
+		_ = controller.DetachDevice(port)
+		_ = tcpConn.Close()
+
+		return 0, fmt.Errorf("record vhci_hcd connection for port %d: %w", port, err)
 	}
 
 	_ = tcpConn.Close()
@@ -56,10 +70,25 @@ func attachRemote(ctx context.Context, endpoint adapterusbip.Endpoint, busid str
 }
 
 func detachRemote(_ context.Context, port int) error {
-	err := vhci.Controller{SysfsRoot: ""}.DetachDevice(port)
+	err := vhci.Controller{
+		SysfsRoot: "",
+		RunRoot:   "",
+	}.DetachDevice(port)
 	if err != nil {
 		return fmt.Errorf("detach vhci_hcd port %d: %w", port, err)
 	}
 
 	return nil
+}
+
+func listImported(_ context.Context) ([]vhci.ImportedDevice, error) {
+	devices, err := vhci.Controller{
+		SysfsRoot: "",
+		RunRoot:   "",
+	}.ListImportedDevices()
+	if err != nil {
+		return nil, fmt.Errorf("list vhci_hcd imported devices: %w", err)
+	}
+
+	return devices, nil
 }
