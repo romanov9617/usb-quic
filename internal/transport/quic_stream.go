@@ -60,19 +60,29 @@ func NewQUICDialStreamOpener(address string, tlsConfig *tls.Config, quicConfig *
 //
 //nolint:ireturn // StreamOpener intentionally hides TCP and QUIC endpoint types.
 func (opener *QUICDialStreamOpener) OpenStream(ctx context.Context) (tunnel.Endpoint, error) {
-	conn, err := opener.connection(ctx)
-	if err != nil {
-		return nil, err
-	}
+	var lastErr error
 
-	stream, err := conn.OpenStreamSync(ctx)
-	if err != nil {
+	for range 2 {
+		conn, err := opener.connection(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		stream, err := conn.OpenStreamSync(ctx)
+		if err == nil {
+			return NewQUICStreamEndpoint(stream), nil
+		}
+
+		lastErr = err
+
 		opener.forgetConnection(conn)
 
-		return nil, fmt.Errorf("open quic stream: %w", err)
+		if ctx.Err() != nil {
+			break
+		}
 	}
 
-	return NewQUICStreamEndpoint(stream), nil
+	return nil, fmt.Errorf("open quic stream: %w", lastErr)
 }
 
 // Close closes the cached QUIC connection, if one has been opened.

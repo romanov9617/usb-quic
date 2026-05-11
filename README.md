@@ -107,8 +107,8 @@ usage: usb-quic [--debug] [--log] [--tcp-port PORT] [version]
 | `attach` | `-r, --remote HOST`; `-b, --busid BUSID`; `-d, --device DEVID` | Sends `OP_REQ_IMPORT` to `HOST:--tcp-port`, receives `OP_REP_IMPORT`, and attaches the imported socket to local `vhci_hcd` through sysfs. | Initial Linux implementation; requires `vhci_hcd` and sufficient permission to write its sysfs `attach` attribute. |
 | `detach` | `-p, --port PORT` | Detaches a local `vhci_hcd` port through the kernel sysfs `detach` attribute. | Initial Linux implementation; requires sufficient permission to write the sysfs `detach` attribute. |
 | `list` | `-p, --parsable`; `-r, --remote HOST`; `-l, --local`; `-d, --device` | `list -r HOST` sends `OP_REQ_DEVLIST` to `HOST:--tcp-port` and prints exported devices. Other list modes return `ErrNotImplemented`. | Remote list is partially implemented; local, parsable, and device modes are not implemented. |
-| `bind` | `-b, --busid BUSID` | Returns `ErrNotImplemented`. | Not implemented. |
-| `unbind` | `-b, --busid BUSID` | Returns `ErrNotImplemented`. | Not implemented. |
+| `bind` | `-b, --busid BUSID` | Adds `BUSID` to `usbip-host` matching, unbinds the current local USB driver when needed, and binds the device to `usbip-host` through sysfs. | Initial Linux implementation; requires `usbip-host` and sufficient permission to write USB driver sysfs attributes. |
+| `unbind` | `-b, --busid BUSID` | Unbinds `BUSID` from `usbip-host`, removes it from `usbip-host` matching, and asks the USB bus to reprobe the device through sysfs. | Initial Linux implementation; requires the device to be currently bound to `usbip-host`. |
 | `port` | none | Prints imported `vhci_hcd` USB/IP devices using the same sysfs status and `/var/run/vhci_hcd/portN` record API as `usbip port`. | Initial Linux implementation; vendor/product names remain placeholders until USB ID database support is added. |
 
 ## Current Daemon API
@@ -213,7 +213,9 @@ usage: usbip unbind <args>
 - `list -r` prints remote exportable devices, but vendor/product names are placeholder text until USB ID database support is added.
 - `port` prints imported devices, but vendor/product names are placeholder text
   until USB ID database support is added.
-- `list -l`, `list -p`, `list -d`, `bind`, and `unbind` are not implemented.
+- `bind` and `unbind` operate on local sysfs only, matching the legacy
+  server-side workflow; they do not use the QUIC transport.
+- `list -l`, `list -p`, and `list -d` are not implemented.
 - The daemon command supports TCP forwarding plus experimental QUIC client/server
   transport modes.
 - QUIC smoke tests currently use an ephemeral self-signed certificate with

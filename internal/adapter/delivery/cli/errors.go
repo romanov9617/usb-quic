@@ -14,5 +14,8 @@ var ErrAttachBusIDRequired = errors.New("attach: busid is required")
 // ErrDetachPortRequired marks detach calls without a vhci port.
 var ErrDetachPortRequired = errors.New("detach: port is required")
 
+// ErrDeviceBusIDRequired marks local device commands without a busid.
+var ErrDeviceBusIDRequired = errors.New("busid is required")
+
 // ErrUnexpectedConnectionType marks non-TCP attach dials.
 var ErrUnexpectedConnectionType = errors.New("unexpected usbip connection type")

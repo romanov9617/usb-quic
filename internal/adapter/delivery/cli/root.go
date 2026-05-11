@@ -10,6 +10,7 @@ import (
 
 	"usb-quic/internal/adapter/logging"
 	adapterusbip "usb-quic/internal/adapter/usbip"
+	"usb-quic/internal/adapter/usbiphost"
 	"usb-quic/internal/adapter/vhci"
 )
 
@@ -33,13 +34,18 @@ type rootOptions struct {
 type Runtime struct {
 	LogLevel     *logging.LevelVar
 	AttachRemote AttachRemoteFunc
+	BindLocal    BindLocalFunc
 	DetachRemote DetachRemoteFunc
 	ListImported ListImportedFunc
 	ListRemote   ListRemoteFunc
+	UnbindLocal  UnbindLocalFunc
 }
 
 // AttachRemoteFunc imports a remote USB/IP device into local vhci_hcd.
 type AttachRemoteFunc func(ctx context.Context, endpoint adapterusbip.Endpoint, busid string) (int, error)
+
+// BindLocalFunc binds a local USB device to usbip-host.
+type BindLocalFunc func(ctx context.Context, busid string) error
 
 // DetachRemoteFunc detaches a USB/IP device from local vhci_hcd.
 type DetachRemoteFunc func(ctx context.Context, port int) error
@@ -50,14 +56,19 @@ type ListImportedFunc func(ctx context.Context) ([]vhci.ImportedDevice, error)
 // ListRemoteFunc lists devices exported by a remote USB/IP endpoint.
 type ListRemoteFunc func(ctx context.Context, endpoint adapterusbip.Endpoint) ([]adapterusbip.Device, error)
 
+// UnbindLocalFunc unbinds a local USB device from usbip-host.
+type UnbindLocalFunc func(ctx context.Context, busid string) error
+
 // NewRootCommand builds a cobra command tree compatible with the usbip CLI shape.
 func NewRootCommand(stdin io.Reader, stdout, stderr io.Writer) *cobra.Command {
 	runtime := Runtime{
 		LogLevel:     nil,
 		AttachRemote: attachRemote,
+		BindLocal:    bindLocal,
 		DetachRemote: detachRemote,
 		ListImported: listImported,
 		ListRemote:   adapterusbip.ListExportedDevices,
+		UnbindLocal:  unbindLocal,
 	}
 
 	return NewRootCommandWithRuntime(stdin, stdout, stderr, runtime)
@@ -65,21 +76,7 @@ func NewRootCommand(stdin io.Reader, stdout, stderr io.Writer) *cobra.Command {
 
 // NewRootCommandWithRuntime builds a cobra command tree with runtime dependencies.
 func NewRootCommandWithRuntime(stdin io.Reader, stdout, stderr io.Writer, runtime Runtime) *cobra.Command {
-	if runtime.AttachRemote == nil {
-		runtime.AttachRemote = attachRemote
-	}
-
-	if runtime.DetachRemote == nil {
-		runtime.DetachRemote = detachRemote
-	}
-
-	if runtime.ListImported == nil {
-		runtime.ListImported = listImported
-	}
-
-	if runtime.ListRemote == nil {
-		runtime.ListRemote = adapterusbip.ListExportedDevices
-	}
+	runtime = runtime.withDefaults()
 
 	opts := rootOptions{
 		debug:   false,
@@ -116,13 +113,41 @@ func NewRootCommandWithRuntime(stdin io.Reader, stdout, stderr io.Writer, runtim
 		newAttachCommand(runtime, &opts),
 		newDetachCommand(runtime),
 		newListCommand(runtime, &opts),
-		newBindCommand(),
-		newUnbindCommand(),
+		newBindCommand(runtime),
+		newUnbindCommand(runtime),
 		newPortCommand(runtime),
 		newVersionCommand(),
 	)
 
 	return cmd
+}
+
+func (runtime Runtime) withDefaults() Runtime {
+	if runtime.AttachRemote == nil {
+		runtime.AttachRemote = attachRemote
+	}
+
+	if runtime.BindLocal == nil {
+		runtime.BindLocal = bindLocal
+	}
+
+	if runtime.DetachRemote == nil {
+		runtime.DetachRemote = detachRemote
+	}
+
+	if runtime.ListImported == nil {
+		runtime.ListImported = listImported
+	}
+
+	if runtime.ListRemote == nil {
+		runtime.ListRemote = adapterusbip.ListExportedDevices
+	}
+
+	if runtime.UnbindLocal == nil {
+		runtime.UnbindLocal = unbindLocal
+	}
+
+	return runtime
 }
 
 func rootHelpTemplate() string {
@@ -143,4 +168,22 @@ func notImplemented(name string) error {
 
 func configureLogLevel(runtime Runtime, verbose bool) {
 	logging.SetVerboseLevel(runtime.LogLevel, verbose)
+}
+
+func bindLocal(_ context.Context, busid string) error {
+	err := usbiphost.Controller{SysfsRoot: ""}.BindDevice(busid)
+	if err != nil {
+		return fmt.Errorf("bind %s to usbip-host: %w", busid, err)
+	}
+
+	return nil
+}
+
+func unbindLocal(_ context.Context, busid string) error {
+	err := usbiphost.Controller{SysfsRoot: ""}.UnbindDevice(busid)
+	if err != nil {
+		return fmt.Errorf("unbind %s from usbip-host: %w", busid, err)
+	}
+
+	return nil
 }

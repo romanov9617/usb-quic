@@ -183,7 +183,7 @@ func newListCommand(runtime Runtime, rootOpts *rootOptions) *cobra.Command {
 	return cmd
 }
 
-func newBindCommand() *cobra.Command {
+func newBindCommand(runtime Runtime) *cobra.Command {
 	opts := deviceOptions{
 		busid: "",
 	}
@@ -193,8 +193,8 @@ func newBindCommand() *cobra.Command {
 		Use:   "bind <args>",
 		Short: "Bind device to usbip-host.ko",
 		Args:  cobra.NoArgs,
-		RunE: func(_ *cobra.Command, _ []string) error {
-			return notImplemented("bind")
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return runBind(cmd, runtime, opts)
 		},
 	}
 
@@ -204,7 +204,20 @@ func newBindCommand() *cobra.Command {
 	return cmd
 }
 
-func newUnbindCommand() *cobra.Command {
+func runBind(cmd *cobra.Command, runtime Runtime, opts deviceOptions) error {
+	if opts.busid == "" {
+		return fmt.Errorf("bind: %w", ErrDeviceBusIDRequired)
+	}
+
+	err := runtime.BindLocal(cmd.Context(), opts.busid)
+	if err != nil {
+		return fmt.Errorf("bind device on busid %s: %w", opts.busid, err)
+	}
+
+	return nil
+}
+
+func newUnbindCommand(runtime Runtime) *cobra.Command {
 	opts := deviceOptions{
 		busid: "",
 	}
@@ -214,8 +227,8 @@ func newUnbindCommand() *cobra.Command {
 		Use:   "unbind <args>",
 		Short: "Unbind device from usbip-host.ko",
 		Args:  cobra.NoArgs,
-		RunE: func(_ *cobra.Command, _ []string) error {
-			return notImplemented("unbind")
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return runUnbind(cmd, runtime, opts)
 		},
 	}
 
@@ -223,6 +236,19 @@ func newUnbindCommand() *cobra.Command {
 	cmd.SetHelpTemplate(unbindHelpTemplate())
 
 	return cmd
+}
+
+func runUnbind(cmd *cobra.Command, runtime Runtime, opts deviceOptions) error {
+	if opts.busid == "" {
+		return fmt.Errorf("unbind: %w", ErrDeviceBusIDRequired)
+	}
+
+	err := runtime.UnbindLocal(cmd.Context(), opts.busid)
+	if err != nil {
+		return fmt.Errorf("unbind device on busid %s: %w", opts.busid, err)
+	}
+
+	return nil
 }
 
 func newPortCommand(runtime Runtime) *cobra.Command {

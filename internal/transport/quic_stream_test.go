@@ -127,6 +127,59 @@ func TestQUICDialStreamOpenerCloseClosesCachedConnection(t *testing.T) {
 	}
 }
 
+func TestQUICDialStreamOpenerRetriesAfterCachedConnectionClose(t *testing.T) {
+	t.Parallel()
+
+	ctx, cancel := context.WithTimeout(t.Context(), time.Second)
+	defer cancel()
+
+	listener := listenQUIC(t)
+	defer closeQUICListener(listener)
+
+	serverConn, serverConnErrs := acceptQUICConn(ctx, listener)
+	staleClientConn := dialQUIC(t, ctx, listener)
+
+	var acceptedConn *quic.Conn
+	select {
+	case acceptedConn = <-serverConn:
+	case err := <-serverConnErrs:
+		t.Fatalf("accept stale conn: %v", err)
+	case <-ctx.Done():
+		t.Fatalf("accept stale conn timed out: %v", ctx.Err())
+	}
+
+	defer closeQUICConn(acceptedConn)
+
+	closeQUICConn(staleClientConn)
+
+	serverStream, serverStreamErrs := acceptQUICStream(ctx, listener)
+	opener := NewQUICDialStreamOpener(listener.Addr().String(), testClientTLSConfig(), nil)
+	opener.conn = staleClientConn
+
+	endpoint, err := opener.OpenStream(ctx)
+	if err != nil {
+		t.Fatalf("open stream after stale conn: %v", err)
+	}
+	defer func() {
+		_ = endpoint.Close()
+	}()
+
+	writeString(t, endpoint, "retry")
+
+	var acceptedStream *quic.Stream
+	select {
+	case acceptedStream = <-serverStream:
+	case err = <-serverStreamErrs:
+		t.Fatalf("accept retried stream: %v", err)
+	case <-ctx.Done():
+		t.Fatalf("accept retried stream timed out: %v", ctx.Err())
+	}
+
+	if got := readString(t, acceptedStream, len("retry")); got != "retry" {
+		t.Fatalf("server read %q, want %q", got, "retry")
+	}
+}
+
 func listenQUIC(t *testing.T) *quic.Listener {
 	t.Helper()
 
@@ -155,6 +208,24 @@ func dialQUIC(t *testing.T, ctx context.Context, listener *quic.Listener) *quic.
 
 func closeQUICConn(conn *quic.Conn) {
 	_ = conn.CloseWithError(0, "")
+}
+
+func acceptQUICConn(ctx context.Context, listener *quic.Listener) (<-chan *quic.Conn, <-chan error) {
+	serverConn := make(chan *quic.Conn, 1)
+	serverErrs := make(chan error, 1)
+
+	go func() {
+		conn, err := listener.Accept(ctx)
+		if err != nil {
+			serverErrs <- err
+
+			return
+		}
+
+		serverConn <- conn
+	}()
+
+	return serverConn, serverErrs
 }
 
 func acceptQUICStream(
