@@ -78,8 +78,6 @@ func TestUSBIPCompatibleCommandsParse(t *testing.T) {
 	}{
 		{name: "list local", args: []string{listCommand, "-l"}},
 		{name: "list device", args: []string{listCommand, "-d"}},
-		{name: bindCommand, args: []string{bindCommand, "-b", testBusID}},
-		{name: unbindCommand, args: []string{unbindCommand, "-b", testBusID}},
 	}
 
 	for _, tt := range tests {
@@ -97,6 +95,119 @@ func TestUSBIPCompatibleCommandsParse(t *testing.T) {
 	}
 }
 
+func TestBindCommand(t *testing.T) {
+	t.Parallel()
+
+	runtime := Runtime{
+		LogLevel:     logging.NewDefaultLevel(),
+		AttachRemote: nil,
+		BindLocal: func(_ context.Context, busid string) error {
+			if busid != testBusID {
+				t.Fatalf("busid=%q, want %q", busid, testBusID)
+			}
+
+			return nil
+		},
+		DetachRemote: nil,
+		ListImported: nil,
+		ListRemote:   nil,
+		UnbindLocal:  nil,
+	}
+
+	cmd := NewRootCommandWithRuntime(nil, bytes.NewBuffer(nil), bytes.NewBuffer(nil), runtime)
+	cmd.SetArgs([]string{bindCommand, "-b", testBusID})
+
+	err := cmd.Execute()
+	if err != nil {
+		t.Fatalf("execute bind: %v", err)
+	}
+}
+
+func TestUnbindCommand(t *testing.T) {
+	t.Parallel()
+
+	runtime := Runtime{
+		LogLevel:     logging.NewDefaultLevel(),
+		AttachRemote: nil,
+		BindLocal:    nil,
+		DetachRemote: nil,
+		ListImported: nil,
+		ListRemote:   nil,
+		UnbindLocal: func(_ context.Context, busid string) error {
+			if busid != testBusID {
+				t.Fatalf("busid=%q, want %q", busid, testBusID)
+			}
+
+			return nil
+		},
+	}
+
+	cmd := NewRootCommandWithRuntime(nil, bytes.NewBuffer(nil), bytes.NewBuffer(nil), runtime)
+	cmd.SetArgs([]string{unbindCommand, "-b", testBusID})
+
+	err := cmd.Execute()
+	if err != nil {
+		t.Fatalf("execute unbind: %v", err)
+	}
+}
+
+func TestDeviceCommandsRequireBusID(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		args []string
+		want string
+	}{
+		{
+			name: bindCommand,
+			args: []string{bindCommand},
+			want: "bind: busid is required",
+		},
+		{
+			name: unbindCommand,
+			args: []string{unbindCommand},
+			want: "unbind: busid is required",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			runtime := Runtime{
+				LogLevel: logging.NewDefaultLevel(),
+				AttachRemote: func(context.Context, adapterusbip.Endpoint, string) (int, error) {
+					t.Fatal("AttachRemote must not be called for invalid args")
+
+					return 0, nil
+				},
+				BindLocal: func(context.Context, string) error {
+					t.Fatal("BindLocal must not be called for invalid args")
+
+					return nil
+				},
+				DetachRemote: nil,
+				ListImported: nil,
+				ListRemote:   nil,
+				UnbindLocal: func(context.Context, string) error {
+					t.Fatal("UnbindLocal must not be called for invalid args")
+
+					return nil
+				},
+			}
+
+			cmd := NewRootCommandWithRuntime(nil, bytes.NewBuffer(nil), bytes.NewBuffer(nil), runtime)
+			cmd.SetArgs(tt.args)
+
+			err := cmd.Execute()
+			if err == nil || err.Error() != tt.want {
+				t.Fatalf("err=%v, want %q", err, tt.want)
+			}
+		})
+	}
+}
+
 func TestPortCommand(t *testing.T) {
 	t.Parallel()
 
@@ -105,6 +216,7 @@ func TestPortCommand(t *testing.T) {
 	runtime := Runtime{
 		LogLevel:     logging.NewDefaultLevel(),
 		AttachRemote: nil,
+		BindLocal:    nil,
 		DetachRemote: nil,
 		ListImported: func(context.Context) ([]vhci.ImportedDevice, error) {
 			return []vhci.ImportedDevice{
@@ -124,7 +236,8 @@ func TestPortCommand(t *testing.T) {
 				},
 			}, nil
 		},
-		ListRemote: nil,
+		ListRemote:  nil,
+		UnbindLocal: nil,
 	}
 
 	cmd := NewRootCommandWithRuntime(nil, &stdout, nil, runtime)
@@ -156,11 +269,13 @@ func TestPortCommandNoDevices(t *testing.T) {
 	runtime := Runtime{
 		LogLevel:     logging.NewDefaultLevel(),
 		AttachRemote: nil,
+		BindLocal:    nil,
 		DetachRemote: nil,
 		ListImported: func(context.Context) ([]vhci.ImportedDevice, error) {
 			return nil, nil
 		},
-		ListRemote: nil,
+		ListRemote:  nil,
+		UnbindLocal: nil,
 	}
 
 	cmd := NewRootCommandWithRuntime(nil, &stdout, nil, runtime)
@@ -195,6 +310,7 @@ func TestAttachRemoteCommand(t *testing.T) {
 
 			return 0, nil
 		},
+		BindLocal:    nil,
 		DetachRemote: nil,
 		ListImported: nil,
 		ListRemote: func(context.Context, adapterusbip.Endpoint) ([]adapterusbip.Device, error) {
@@ -202,6 +318,7 @@ func TestAttachRemoteCommand(t *testing.T) {
 
 			return nil, nil
 		},
+		UnbindLocal: nil,
 	}
 
 	cmd := NewRootCommandWithRuntime(nil, bytes.NewBuffer(nil), bytes.NewBuffer(nil), runtime)
@@ -225,9 +342,11 @@ func TestAttachRemoteCommandAcceptsDeviceFlagAsBusID(t *testing.T) {
 
 			return 0, nil
 		},
+		BindLocal:    nil,
 		DetachRemote: nil,
 		ListImported: nil,
 		ListRemote:   nil,
+		UnbindLocal:  nil,
 	}
 
 	cmd := NewRootCommandWithRuntime(nil, bytes.NewBuffer(nil), bytes.NewBuffer(nil), runtime)
@@ -270,9 +389,11 @@ func TestAttachRemoteCommandRequiresRemoteAndBusID(t *testing.T) {
 
 					return 0, nil
 				},
+				BindLocal:    nil,
 				DetachRemote: nil,
 				ListImported: nil,
 				ListRemote:   nil,
+				UnbindLocal:  nil,
 			})
 			cmd.SetArgs(tt.args)
 
@@ -290,6 +411,7 @@ func TestDetachRemoteCommand(t *testing.T) {
 	runtime := Runtime{
 		LogLevel:     logging.NewDefaultLevel(),
 		AttachRemote: nil,
+		BindLocal:    nil,
 		DetachRemote: func(_ context.Context, port int) error {
 			if port != 3 {
 				t.Fatalf("port=%d, want 3", port)
@@ -299,6 +421,7 @@ func TestDetachRemoteCommand(t *testing.T) {
 		},
 		ListImported: nil,
 		ListRemote:   nil,
+		UnbindLocal:  nil,
 	}
 
 	cmd := NewRootCommandWithRuntime(nil, bytes.NewBuffer(nil), bytes.NewBuffer(nil), runtime)
@@ -316,6 +439,7 @@ func TestDetachRemoteCommandRequiresPort(t *testing.T) {
 	cmd := NewRootCommandWithRuntime(nil, bytes.NewBuffer(nil), bytes.NewBuffer(nil), Runtime{
 		LogLevel:     logging.NewDefaultLevel(),
 		AttachRemote: nil,
+		BindLocal:    nil,
 		DetachRemote: func(context.Context, int) error {
 			t.Fatal("DetachRemote must not be called for invalid args")
 
@@ -323,6 +447,7 @@ func TestDetachRemoteCommandRequiresPort(t *testing.T) {
 		},
 		ListImported: nil,
 		ListRemote:   nil,
+		UnbindLocal:  nil,
 	})
 	cmd.SetArgs([]string{detachCommand})
 
@@ -340,6 +465,7 @@ func TestListRemoteCommand(t *testing.T) {
 	runtime := Runtime{
 		LogLevel:     logging.NewDefaultLevel(),
 		AttachRemote: nil,
+		BindLocal:    nil,
 		DetachRemote: nil,
 		ListRemote: func(_ context.Context, endpoint adapterusbip.Endpoint) ([]adapterusbip.Device, error) {
 			if endpoint.Host != localTCPHost || endpoint.Port != 4321 {
@@ -368,6 +494,7 @@ func TestListRemoteCommand(t *testing.T) {
 			}, nil
 		},
 		ListImported: nil,
+		UnbindLocal:  nil,
 	}
 
 	cmd := NewRootCommandWithRuntime(nil, &stdout, nil, runtime)
@@ -400,11 +527,13 @@ func TestListRemoteCommandNoDevices(t *testing.T) {
 	runtime := Runtime{
 		LogLevel:     logging.NewDefaultLevel(),
 		AttachRemote: nil,
+		BindLocal:    nil,
 		DetachRemote: nil,
 		ListRemote: func(context.Context, adapterusbip.Endpoint) ([]adapterusbip.Device, error) {
 			return nil, nil
 		},
 		ListImported: nil,
+		UnbindLocal:  nil,
 	}
 
 	cmd := NewRootCommandWithRuntime(nil, &stdout, nil, runtime)

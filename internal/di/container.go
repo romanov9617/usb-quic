@@ -134,9 +134,11 @@ func newRootCommand(streams Streams, level *logging.LevelVar) *cobra.Command {
 	runtime := cli.Runtime{
 		LogLevel:     level,
 		AttachRemote: nil,
+		BindLocal:    nil,
 		DetachRemote: nil,
 		ListImported: nil,
 		ListRemote:   nil,
+		UnbindLocal:  nil,
 	}
 
 	return cli.NewRootCommandWithRuntime(
