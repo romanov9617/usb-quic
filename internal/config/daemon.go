@@ -12,6 +12,7 @@ type Daemon struct {
 	PIDFile        string `json:"pid_file"`
 	QUICAddr       string `json:"quic_addr"`
 	QUICListen     string `json:"quic_listen"`
+	TCPListen      string `json:"tcp_listen"`
 	TCPPort        int    `json:"tcp_port"`
 	TransportMode  string `json:"transport_mode"`
 	Upstream       string `json:"upstream"`

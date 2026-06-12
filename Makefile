@@ -1,15 +1,16 @@
-BINARIES := usb-quic daemon
+BINARIES := usb-quic usb-quicd
 DIST_DIR := dist
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 CLI_VERSION_VAR := usb-quic/internal/adapter/delivery/cli.version
 DAEMON_VERSION_VAR := usb-quic/internal/adapter/delivery/daemon.version
 LDFLAGS := -s -w -X $(CLI_VERSION_VAR)=$(VERSION) -X $(DAEMON_VERSION_VAR)=$(VERSION)
 
-.PHONY: help build test bench stats clean
+.PHONY: help build install test bench stats clean
 
 help:
 	@echo "Available targets:"
 	@echo "  make build    Build binaries into $(DIST_DIR) with VERSION=$(VERSION)"
+	@echo "  make install  Install binaries into PREFIX=$(PREFIX)"
 	@echo "  make test     Run unit tests"
 	@echo "  make bench    Run Go benchmarks with memory stats"
 	@echo "  make stats    Print project and test coverage stats"
@@ -20,6 +21,12 @@ build:
 	@for bin in $(BINARIES); do \
 		go build -trimpath -ldflags "$(LDFLAGS)" -o "$(DIST_DIR)/$$bin" "./cmd/$$bin"; \
 	done
+
+PREFIX ?= /usr/local
+
+install: build
+	install -Dm755 "$(DIST_DIR)/usb-quic" "$(DESTDIR)$(PREFIX)/bin/usb-quic"
+	install -Dm755 "$(DIST_DIR)/usb-quicd" "$(DESTDIR)$(PREFIX)/bin/usb-quicd"
 
 test:
 	go test ./...

@@ -159,7 +159,7 @@ func newDaemonRun(logger *logging.Logger) daemon.RunFunc {
 
 func runDaemon(ctx context.Context, cfg config.Daemon, logger *logging.Logger) error {
 	switch cfg.TransportMode {
-	case "", daemonTransportTCP:
+	case daemonTransportTCP:
 		err := runtimedaemon.New(cfg, logger).Run(ctx)
 		if err != nil {
 			return fmt.Errorf("run tcp daemon: %w", err)

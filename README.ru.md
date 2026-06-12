@@ -2,321 +2,150 @@
 
 Языки: [English](README.md) | Русский
 
-`usb-quic` - проект userspace-прокси для USB/IP поверх QUIC.
+`usb-quic` - экспериментальный Linux-прокси USB/IP поверх QUIC и частично
+совместимая замена CLI для распространённых сценариев `usbip`.
 
-Цель продукта - не только туннелировать USB/IP-трафик. CLI должен стать
-практической заменой legacy workflow команды `usbip`, пригодной для
-использования через shell alias, wrapper или стратегию drop-in binary.
+Проект предоставляет:
 
-Текущий статус: CLI-каркас совместимости, TCP forwarding и experimental QUIC
-client/server transport. Production TLS configuration еще предстоит добавить.
+- `usb-quic`: операторский CLI, совместимый с основными командами `usbip`;
+- `usb-quicd`: foreground proxy service для клиентской и серверной машин;
+- release-архивы для Linux `amd64` и `arm64`;
+- опциональную drop-in ссылку `/usr/local/bin/usbip`;
+- опциональные systemd-сервисы клиента и сервера.
 
-## Цель Совместимости
+## Статус
 
-Проект ориентирован на совместимость со штатными Linux USB/IP-компонентами:
+Проект пока не готов к production. QUIC transport требует
+`--insecure-dev-tls`: сервер создаёт временный self-signed сертификат, а клиент
+не проверяет сертификат.
 
-- `usbip`
-- `usbipd`
-- `usbip-host`
-- `vhci-hcd`
+Автоматическими тестами проверяются:
 
-На краях протокол должен оставаться обычным USB/IP поверх локального TCP. QUIC
-используется только между client-side и server-side прокси.
+- обработка USB/IP `DEVLIST` и `IMPORT`;
+- адаптеры `vhci_hcd`, `usbip-host` и sysfs на fixtures;
+- TCP и QUIC stream forwarding;
+- CLI-команды `list`, `attach`, `detach`, `bind`, `unbind` и `port`.
 
-Целевая топология:
+Не гарантируются:
 
-```text
-[ Linux client ]
-  usbip / vhci-hcd
-        |
-        | TCP 127.0.0.1:3240
-        v
-  client-side proxy
-        |
-        | QUIC
-        v
-  server-side proxy
-        |
-        | TCP 127.0.0.1:3240
-        v
-  usbipd -> usbip-host -> physical USB device
+- production security и работа во враждебной сети;
+- восстановление прерванной USB/IP-сессии;
+- обнаружение gadgets через `usbip list -d`;
+- совместимость с каждым ядром и USB-устройством;
+- unattended end-to-end работа на реальном оборудовании.
+
+Поэтому для первого публичного релиза рекомендуется версия `v0.1.0`, а не
+`v1.0.0`.
+
+## Установка
+
+Скачайте архив для своей архитектуры из GitHub Releases, проверьте и распакуйте:
+
+```bash
+sha256sum -c SHA256SUMS --ignore-missing
+tar -xzf usb-quic_v0.1.0_linux_amd64.tar.gz
+cd usb-quic_v0.1.0_linux_amd64
+sudo ./install.sh
 ```
 
-Ключевой инвариант:
+Будут установлены:
 
-```text
-1 TCP USB/IP session = 1 QUIC stream
+- `/usr/local/bin/usb-quic`
+- `/usr/local/bin/usb-quicd`
+- выключенные `usb-quic-client.service` и `usb-quic-server.service`
+- примеры конфигурации в `/etc/usb-quic`
+
+Installer не запускает сервис автоматически: адрес сервера и security policy
+невозможно безопасно выбрать без участия пользователя.
+
+### Замена команды `usbip`
+
+Чтобы создать `/usr/local/bin/usbip` как ссылку на `usb-quic`:
+
+```bash
+sudo ./install.sh --replace-usbip
 ```
 
-## Контракт CLI-Совместимости
+Это надёжнее shell alias и работает с `sudo`. Штатный бинарник остаётся по
+исходному пути, обычно `/usr/sbin/usbip`.
 
-CLI должен следовать наблюдаемому API legacy-команды `usbip`.
+## Настройка Сервисов
 
-Как минимум, распространенные пользовательские сценарии должны оставаться
-привычными:
+Следующая конфигурация использует небезопасный development TLS.
 
-- `usbip list -r HOST`
-- `usbip attach -r HOST -b BUSID`
-- `usbip detach -p PORT`
-- `usbip port`
-- `usbip list -l`
-- `usbip bind -b BUSID`
-- `usbip unbind -b BUSID`
+### Серверная машина
 
-Любой разрыв совместимости следует считать:
+Штатный `usbipd` должен быть установлен, запущен и экспортировать нужные
+устройства:
 
-- дефектом продукта, который нужно исправить, или
-- явным ограничением, задокументированным здесь.
-
-## Текущий CLI API
-
-Текущее дерево команд реализовано через Cobra в:
-
-- `internal/adapter/delivery/cli/root.go`
-- `internal/adapter/delivery/cli/commands.go`
-
-Operator-facing binary собирается из `cmd/usb-quic`.
-
-Текущий root usage:
-
-```text
-usage: usb-quic [--debug] [--log] [--tcp-port PORT] [version]
-             [help] <command> <args>
-
-  attach     Attach a remote USB device
-  detach     Detach a remote USB device
-  list       List exportable or local USB devices
-  bind       Bind device to usbip-host.ko
-  unbind     Unbind device from usbip-host.ko
-  port       Show imported USB devices
+```bash
+sudo cp /etc/usb-quic/server.env.example /etc/usb-quic/server.env
+sudo systemctl enable --now usb-quic-server.service
+sudo systemctl status usb-quic-server.service
 ```
 
-### Глобальные Флаги
+Пример слушает QUIC на UDP-порту `4242` и передаёт streams штатному `usbipd` на
+`127.0.0.1:3240`. При необходимости разрешите UDP-порт `4242` в firewall.
 
-| Флаг | Текущий статус | Примечания |
-| --- | --- | --- |
-| `--debug` | парсится | Присутствует для совместимости с формой `usbip`. |
-| `--log` | парсится | Присутствует для совместимости с формой `usbip`. |
-| `--tcp-port PORT` | парсится и используется | По умолчанию USB/IP port `3240`. |
+### Клиентская машина
 
-## Поверхность Команд
+Перед включением сервиса замените `SERVER_ADDRESS`:
 
-| Команда | Текущие флаги | Текущее поведение | Статус совместимости |
-| --- | --- | --- | --- |
-| `version` | нет | Печатает build-time version или `dev` в локальных сборках. | Частично: формат вывода не совпадает с `usbip (usbip-utils 2.0)`. |
-| `help` | нет | Печатает root help. | В основном совместимо на root-уровне. |
-| `attach` | `-r, --remote HOST`; `-b, --busid BUSID`; `-d, --device DEVID` | Отправляет `OP_REQ_IMPORT` на `HOST:--tcp-port`, получает `OP_REP_IMPORT` и подключает импортированный socket к локальному `vhci_hcd` через sysfs. | Начальная Linux-реализация; требует `vhci_hcd` и прав на запись в sysfs attribute `attach`. |
-| `detach` | `-p, --port PORT` | Отключает локальный `vhci_hcd` port через kernel sysfs attribute `detach`. | Начальная Linux-реализация; требует прав на запись в sysfs attribute `detach`. |
-| `list` | `-p, --parsable`; `-r, --remote HOST`; `-l, --local`; `-d, --device` | `list -r HOST` отправляет `OP_REQ_DEVLIST` на `HOST:--tcp-port`; `list -l` сканирует локальные USB devices через sysfs; `-p` печатает parsable output `busid=...#usbid=...#`; `list -d` сейчас возвращает пустой вывод, когда локальных `usbip-vudc` gadgets нет. | Remote и local list разрешают имена vendor/product через системную базу `usb.ids`, если она доступна; device mode пока no-op placeholder. |
-| `bind` | `-b, --busid BUSID` | Добавляет `BUSID` в matching `usbip-host`, при необходимости отвязывает текущий локальный USB driver и привязывает устройство к `usbip-host` через sysfs. | Начальная Linux-реализация; требует `usbip-host` и прав на запись в USB driver sysfs attributes. |
-| `unbind` | `-b, --busid BUSID` | Отвязывает `BUSID` от `usbip-host`, удаляет его из matching `usbip-host` и просит USB bus заново probe-нуть устройство через sysfs. | Начальная Linux-реализация; требует, чтобы устройство уже было bound к `usbip-host`. |
-| `port` | нет | Печатает импортированные USB/IP устройства из `vhci_hcd`, используя тот же sysfs status и `/var/run/vhci_hcd/portN` record API, что и `usbip port`. | Начальная Linux-реализация; имена vendor/product разрешаются через системную базу `usb.ids`, если она доступна. |
-
-## Текущий Daemon API
-
-Daemon entrypoint отделен от operator CLI `usb-quic`, как в
-оригинальных USB/IP userspace tools. Он собирается из `cmd/daemon` и реализован
-в `internal/adapter/delivery/daemon`.
-
-Текущий daemon usage:
-
-```text
-usage: usbipd [options]
-
-	-4, --ipv4
-		Bind to IPv4. Default is both.
-
-	-6, --ipv6
-		Bind to IPv6. Default is both.
-
-	-e, --device
-		Run in device mode.
-		Rather than drive an attached device, create
-		a virtual UDC to bind gadgets to.
-
-	-D, --daemon
-		Run as a daemon process.
-
-	-d, --debug
-		Print debugging information.
-
-	-PFILE, --pid FILE
-		Write process id to FILE.
-		If no FILE specified, use /var/run/usbipd.pid
-
-	-tPORT, --tcp-port PORT
-		Listen on TCP/IP port PORT.
-
-	-h, --help
-		Print this help.
-
-	-v, --version
-		Show version.
+```bash
+sudo cp /etc/usb-quic/client.env.example /etc/usb-quic/client.env
+sudo editor /etc/usb-quic/client.env
+sudo systemctl enable --now usb-quic-client.service
+sudo systemctl status usb-quic-client.service
 ```
 
-Все daemon flags парсятся. Daemon runtime уже может слушать локальные TCP
-sessions и прокидывать каждую принятую session через текущий stream transport
-adapter. Сейчас adapter основан на TCP; QUIC transport и TLS еще не
-реализованы.
+Клиентский пример открывает proxy только на `127.0.0.1:3240`:
 
-## Наблюдаемый Legacy USB/IP API
-
-Локальная системная команда `usbip` сообщает такой root usage:
-
-```text
-usage: usbip [--debug] [--log] [--tcp-port PORT] [version]
-             [help] <command> <args>
-
-  attach     Attach a remote USB device
-  detach     Detach a remote USB device
-  list       List exportable or local USB devices
-  bind       Bind device to usbip-host.ko
-  unbind     Unbind device from usbip-host.ko
-  port       Show imported USB devices
+```bash
+usb-quic list -r 127.0.0.1
 ```
 
-Наблюдаемый usage подкоманд:
+Kernel-операции `attach`, `detach`, `bind` и `unbind` могут требовать root-прав
+и соответствующих kernel modules.
 
-```text
-usage: usbip attach <args>
-    -r, --remote=<host>      The machine with exported USB devices
-    -b, --busid=<busid>      Busid of the device on <host>
-    -d, --device=<devid>     Id of the virtual UDC on <host>
+## CLI
+
+Основные команды:
+
+```bash
+usb-quic list -l
+usb-quic list -r HOST
+sudo usb-quic attach -r HOST -b BUSID
+sudo usb-quic detach -p PORT
+usb-quic port
+sudo usb-quic bind -b BUSID
+sudo usb-quic unbind -b BUSID
 ```
 
-```text
-usage: usbip list [-p|--parsable] <args>
-    -p, --parsable         Parsable list format
-    -r, --remote=<host>    List the exportable USB devices on <host>
-    -l, --local            List the local USB devices
-    -d, --device           List the local USB gadgets bound to usbip-vudc
-```
+Имена USB vendor/product загружаются из системной базы `usb.ids`, если она
+доступна.
 
-```text
-usage: usbip detach <args>
-    -p, --port=<port>    vhci_hcd port the device is on
-```
+Параметры proxy service выводятся командой `usb-quicd --help`. Запуск
+`usb-quicd` без явного `--transport` завершается ошибкой вместо выбора
+потенциально небезопасной сетевой конфигурации.
 
-```text
-usage: usbip bind <args>
-    -b, --busid=<busid>    Bind usbip-host.ko to device on <busid>
-```
-
-```text
-usage: usbip unbind <args>
-    -b, --busid=<busid>    Unbind usbip-host.ko from device on <busid>
-```
-
-## Текущие Разрывы Совместимости
-
-- `attach` сейчас поддерживает основной remote import path через `vhci_hcd`;
-  `--device` принимается как legacy-compatible alias для import id.
-- `list -r`, `list -l` и `port` используют первую доступную системную базу
-  USB ID из стандартных Linux-путей; отсутствующие записи выводятся как
-  `unknown vendor` или `unknown product`.
-- `bind` и `unbind` работают только с локальным sysfs, как legacy
-  server-side workflow; QUIC transport они не используют.
-- `list -d` сейчас возвращает пустой вывод; полноценный `usbip-vudc` gadget
-  discovery не реализован.
-- Daemon command поддерживает TCP forwarding и experimental QUIC client/server
-  transport modes.
-- QUIC smoke tests сейчас используют ephemeral self-signed certificate с
-  `--usb-quic-dev-insecure-tls`; production TLS configuration еще предстоит
-  добавить.
-
-## Направление Реализации
-
-Текущая структура команд разделяет:
-
-- operator command surface `usb-quic`, и
-- `usbipd`-подобный daemon entrypoint.
-
-Пользовательский command API должен сохранять legacy-семантику команд. Запуск
-proxy и детали QUIC transport должны быть скрыты за совместимым workflow там,
-где это возможно. Daemon behavior должен находиться в отдельном daemon
-entrypoint, а не в operator-facing команде `usb-quic`.
-
-## Ручная проверка `usb-quic list -r` с настоящим `usbipd`
-
-Daemon entrypoint содержит скрытые `usb-quic` flags для локальной проверки
-текущего transport path без изменения usbipd-like help output. Smoke test
-использует ephemeral self-signed certificate и отключает client-side
-certificate verification, поэтому это не production TLS configuration.
-
-Сначала соберите binaries:
+## Разработка
 
 ```bash
 make build
+make test
 ```
 
-Эта проверка проходит первый USB/IP command path end to end с настоящим
-`usbipd`:
+Локальные бинарники создаются как `dist/usb-quic` и `dist/usb-quicd`.
 
-```text
-usb-quic list -r -> local TCP -> QUIC stream -> TCP upstream
-usb-quic attach -r -> local TCP -> QUIC stream -> TCP upstream -> vhci_hcd
-```
+Процесс релиза и требования к `v1.0.0` описаны в
+[docs/RELEASING.md](docs/RELEASING.md).
 
-На машине, к которой подключено USB-устройство:
+## Удаление
+
+Из распакованного release-архива:
 
 ```bash
-sudo modprobe usbip-host
-sudo usbipd -D
+sudo ./uninstall.sh
 ```
 
-В другом терминале на этой же машине посмотрите локальные USB devices и
-экспортируйте нужное:
-
-```bash
-usbip list -l
-sudo usbip bind -b <BUSID>
-```
-
-Запустите QUIC server с upstream на настоящий порт `usbipd`:
-
-```bash
-./dist/daemon \
-  --debug \
-  --usb-quic-transport quic-server \
-  --usb-quic-quic-listen 127.0.0.1:14242 \
-  --usb-quic-upstream 127.0.0.1:3240 \
-  --usb-quic-dev-insecure-tls
-```
-
-Запустите client-side TCP entrypoint:
-
-```bash
-./dist/daemon \
-  --debug \
-  --tcp-port 13241 \
-  --usb-quic-transport quic-client \
-  --usb-quic-quic-addr 127.0.0.1:14242 \
-  --usb-quic-dev-insecure-tls
-```
-
-Затем запросите exported devices через tunnel:
-
-```bash
-./dist/usb-quic \
-  --tcp-port 13241 \
-  list -r 127.0.0.1
-```
-
-В выводе должны появиться устройства, exported настоящим `usbipd`.
-
-Чтобы импортировать одно из этих устройств через тот же tunnel, загрузите
-`vhci_hcd` на client-машине и запустите attach с правами, достаточными для
-kernel sysfs attach API:
-
-```bash
-sudo modprobe vhci-hcd
-sudo ./dist/usb-quic \
-  --tcp-port 13241 \
-  attach -r 127.0.0.1 -b <BUSID>
-```
-
-Затем отключите импортированное устройство от выбранного локального vhci port:
-
-```bash
-sudo ./dist/usb-quic detach -p <PORT>
-```
+Конфигурация в `/etc/usb-quic` сохраняется.

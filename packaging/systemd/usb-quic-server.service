@@ -1,0 +1,20 @@
+[Unit]
+Description=usb-quic server-side proxy
+Documentation=https://github.com/romanov9617/usb-quic
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/usb-quic/server.env
+ExecStart=/usr/local/bin/usb-quicd $USB_QUIC_ARGS
+Restart=on-failure
+RestartSec=3
+DynamicUser=yes
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+
+[Install]
+WantedBy=multi-user.target

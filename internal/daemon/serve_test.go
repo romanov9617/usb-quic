@@ -91,6 +91,7 @@ func testDaemon(streamOpener transport.StreamOpener) *Daemon {
 		PIDFile:        "",
 		QUICAddr:       "",
 		QUICListen:     "",
+		TCPListen:      "",
 		TCPPort:        testTCPPort,
 		TransportMode:  "",
 		Upstream:       "",

@@ -1,4 +1,4 @@
-// Command daemon provides a usbipd-like service entrypoint.
+// Command usb-quicd provides the usb-quic proxy service entrypoint.
 package main
 
 import (
