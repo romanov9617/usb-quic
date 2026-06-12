@@ -139,6 +139,7 @@ func newRootCommand(streams Streams, level *logging.LevelVar) *cobra.Command {
 		ListImported: nil,
 		ListLocal:    nil,
 		ListRemote:   nil,
+		LookupUSBID:  nil,
 		UnbindLocal:  nil,
 	}
 

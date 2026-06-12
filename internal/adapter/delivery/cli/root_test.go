@@ -22,6 +22,18 @@ const (
 	unbindCommand = "unbind"
 )
 
+func knownUSBID(_, _ uint16) (string, string) {
+	return "Nordic Semiconductor", "USB Test Device"
+}
+
+func vendorOnlyUSBID(_, _ uint16) (string, string) {
+	return "Nordic Semiconductor", ""
+}
+
+func unknownUSBID(_, _ uint16) (string, string) {
+	return "", ""
+}
+
 func TestRootHelpMatchesUSBIPShape(t *testing.T) {
 	t.Parallel()
 
@@ -127,6 +139,7 @@ func TestListLocalCommand(t *testing.T) {
 			}, nil
 		},
 		ListRemote:  nil,
+		LookupUSBID: knownUSBID,
 		UnbindLocal: nil,
 	}
 
@@ -139,7 +152,7 @@ func TestListLocalCommand(t *testing.T) {
 	}
 
 	want := ` - busid 1-1 (2fe3:0001)
-   unknown vendor : unknown product (2fe3:0001)
+   Nordic Semiconductor : USB Test Device (2fe3:0001)
 
 `
 
@@ -180,6 +193,7 @@ func TestListLocalCommandParsable(t *testing.T) {
 			}, nil
 		},
 		ListRemote:  nil,
+		LookupUSBID: unknownUSBID,
 		UnbindLocal: nil,
 	}
 
@@ -232,6 +246,7 @@ func TestBindCommand(t *testing.T) {
 		ListImported: nil,
 		ListLocal:    nil,
 		ListRemote:   nil,
+		LookupUSBID:  unknownUSBID,
 		UnbindLocal:  nil,
 	}
 
@@ -255,6 +270,7 @@ func TestUnbindCommand(t *testing.T) {
 		ListImported: nil,
 		ListLocal:    nil,
 		ListRemote:   nil,
+		LookupUSBID:  unknownUSBID,
 		UnbindLocal: func(_ context.Context, busid string) error {
 			if busid != testBusID {
 				t.Fatalf("busid=%q, want %q", busid, testBusID)
@@ -313,6 +329,7 @@ func TestDeviceCommandsRequireBusID(t *testing.T) {
 				ListImported: nil,
 				ListLocal:    nil,
 				ListRemote:   nil,
+				LookupUSBID:  unknownUSBID,
 				UnbindLocal: func(context.Context, string) error {
 					t.Fatal("UnbindLocal must not be called for invalid args")
 
@@ -361,6 +378,7 @@ func TestPortCommand(t *testing.T) {
 		},
 		ListLocal:   nil,
 		ListRemote:  nil,
+		LookupUSBID: vendorOnlyUSBID,
 		UnbindLocal: nil,
 	}
 
@@ -375,7 +393,7 @@ func TestPortCommand(t *testing.T) {
 	want := `Imported USB devices
 ====================
 Port 03: <Port in Use> at High Speed(480Mbps)
-       unknown vendor : unknown product (2fe3:0001)
+       Nordic Semiconductor : unknown product (2fe3:0001)
        1-1 -> usbip://127.0.0.1:3240/1-1
            -> remote bus/dev 001/002
 `
@@ -400,6 +418,7 @@ func TestPortCommandNoDevices(t *testing.T) {
 		},
 		ListLocal:   nil,
 		ListRemote:  nil,
+		LookupUSBID: unknownUSBID,
 		UnbindLocal: nil,
 	}
 
@@ -444,6 +463,7 @@ func TestAttachRemoteCommand(t *testing.T) {
 
 			return nil, nil
 		},
+		LookupUSBID: unknownUSBID,
 		UnbindLocal: nil,
 	}
 
@@ -473,6 +493,7 @@ func TestAttachRemoteCommandAcceptsDeviceFlagAsBusID(t *testing.T) {
 		ListImported: nil,
 		ListLocal:    nil,
 		ListRemote:   nil,
+		LookupUSBID:  unknownUSBID,
 		UnbindLocal:  nil,
 	}
 
@@ -521,6 +542,7 @@ func TestAttachRemoteCommandRequiresRemoteAndBusID(t *testing.T) {
 				ListImported: nil,
 				ListLocal:    nil,
 				ListRemote:   nil,
+				LookupUSBID:  unknownUSBID,
 				UnbindLocal:  nil,
 			})
 			cmd.SetArgs(tt.args)
@@ -550,6 +572,7 @@ func TestDetachRemoteCommand(t *testing.T) {
 		ListImported: nil,
 		ListLocal:    nil,
 		ListRemote:   nil,
+		LookupUSBID:  unknownUSBID,
 		UnbindLocal:  nil,
 	}
 
@@ -577,6 +600,7 @@ func TestDetachRemoteCommandRequiresPort(t *testing.T) {
 		ListImported: nil,
 		ListLocal:    nil,
 		ListRemote:   nil,
+		LookupUSBID:  unknownUSBID,
 		UnbindLocal:  nil,
 	})
 	cmd.SetArgs([]string{detachCommand})
@@ -625,6 +649,7 @@ func TestListRemoteCommand(t *testing.T) {
 		},
 		ListImported: nil,
 		ListLocal:    nil,
+		LookupUSBID:  unknownUSBID,
 		UnbindLocal:  nil,
 	}
 
@@ -665,6 +690,7 @@ func TestListRemoteCommandNoDevices(t *testing.T) {
 		},
 		ListImported: nil,
 		ListLocal:    nil,
+		LookupUSBID:  unknownUSBID,
 		UnbindLocal:  nil,
 	}
 

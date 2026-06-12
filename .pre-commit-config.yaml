@@ -16,11 +16,6 @@ repos:
         language: system
         pass_filenames: false
 
-      - id: goimports
-        name: goimports
-        entry: bash -c 'goimports -w $(git ls-files "*.go")'
-        language: system
-        pass_filenames: false
 
       - id: golangci-lint
         name: golangci-lint
