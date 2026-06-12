@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"usb-quic/internal/adapter/logging"
+	"usb-quic/internal/adapter/usbids"
 	adapterusbip "usb-quic/internal/adapter/usbip"
 	"usb-quic/internal/adapter/usbiphost"
 	"usb-quic/internal/adapter/vhci"
@@ -39,6 +40,7 @@ type Runtime struct {
 	ListImported ListImportedFunc
 	ListLocal    ListLocalFunc
 	ListRemote   ListRemoteFunc
+	LookupUSBID  LookupUSBIDFunc
 	UnbindLocal  UnbindLocalFunc
 }
 
@@ -60,6 +62,9 @@ type ListLocalFunc func(ctx context.Context) ([]adapterusbip.Device, error)
 // ListRemoteFunc lists devices exported by a remote USB/IP endpoint.
 type ListRemoteFunc func(ctx context.Context, endpoint adapterusbip.Endpoint) ([]adapterusbip.Device, error)
 
+// LookupUSBIDFunc resolves USB vendor and product names.
+type LookupUSBIDFunc func(idVendor, idProduct uint16) (string, string)
+
 // UnbindLocalFunc unbinds a local USB device from usbip-host.
 type UnbindLocalFunc func(ctx context.Context, busid string) error
 
@@ -73,6 +78,7 @@ func NewRootCommand(stdin io.Reader, stdout, stderr io.Writer) *cobra.Command {
 		ListImported: listImported,
 		ListLocal:    listLocal,
 		ListRemote:   adapterusbip.ListExportedDevices,
+		LookupUSBID:  usbids.NewDefaultLookup(),
 		UnbindLocal:  unbindLocal,
 	}
 
@@ -150,6 +156,10 @@ func (runtime Runtime) withDefaults() Runtime {
 
 	if runtime.ListRemote == nil {
 		runtime.ListRemote = adapterusbip.ListExportedDevices
+	}
+
+	if runtime.LookupUSBID == nil {
+		runtime.LookupUSBID = usbids.NewDefaultLookup()
 	}
 
 	if runtime.UnbindLocal == nil {

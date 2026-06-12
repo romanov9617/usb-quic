@@ -107,10 +107,10 @@ usage: usb-quic [--debug] [--log] [--tcp-port PORT] [version]
 | `help` | нет | Печатает root help. | В основном совместимо на root-уровне. |
 | `attach` | `-r, --remote HOST`; `-b, --busid BUSID`; `-d, --device DEVID` | Отправляет `OP_REQ_IMPORT` на `HOST:--tcp-port`, получает `OP_REP_IMPORT` и подключает импортированный socket к локальному `vhci_hcd` через sysfs. | Начальная Linux-реализация; требует `vhci_hcd` и прав на запись в sysfs attribute `attach`. |
 | `detach` | `-p, --port PORT` | Отключает локальный `vhci_hcd` port через kernel sysfs attribute `detach`. | Начальная Linux-реализация; требует прав на запись в sysfs attribute `detach`. |
-| `list` | `-p, --parsable`; `-r, --remote HOST`; `-l, --local`; `-d, --device` | `list -r HOST` отправляет `OP_REQ_DEVLIST` на `HOST:--tcp-port`; `list -l` сканирует локальные USB devices через sysfs; `-p` печатает parsable output `busid=...#usbid=...#`; `list -d` сейчас возвращает пустой вывод, когда локальных `usbip-vudc` gadgets нет. | Remote и local list реализованы с placeholder именами vendor/product до добавления USB ID database; device mode пока no-op placeholder. |
+| `list` | `-p, --parsable`; `-r, --remote HOST`; `-l, --local`; `-d, --device` | `list -r HOST` отправляет `OP_REQ_DEVLIST` на `HOST:--tcp-port`; `list -l` сканирует локальные USB devices через sysfs; `-p` печатает parsable output `busid=...#usbid=...#`; `list -d` сейчас возвращает пустой вывод, когда локальных `usbip-vudc` gadgets нет. | Remote и local list разрешают имена vendor/product через системную базу `usb.ids`, если она доступна; device mode пока no-op placeholder. |
 | `bind` | `-b, --busid BUSID` | Добавляет `BUSID` в matching `usbip-host`, при необходимости отвязывает текущий локальный USB driver и привязывает устройство к `usbip-host` через sysfs. | Начальная Linux-реализация; требует `usbip-host` и прав на запись в USB driver sysfs attributes. |
 | `unbind` | `-b, --busid BUSID` | Отвязывает `BUSID` от `usbip-host`, удаляет его из matching `usbip-host` и просит USB bus заново probe-нуть устройство через sysfs. | Начальная Linux-реализация; требует, чтобы устройство уже было bound к `usbip-host`. |
-| `port` | нет | Печатает импортированные USB/IP устройства из `vhci_hcd`, используя тот же sysfs status и `/var/run/vhci_hcd/portN` record API, что и `usbip port`. | Начальная Linux-реализация; имена vendor/product остаются placeholder-текстом до добавления USB ID database. |
+| `port` | нет | Печатает импортированные USB/IP устройства из `vhci_hcd`, используя тот же sysfs status и `/var/run/vhci_hcd/portN` record API, что и `usbip port`. | Начальная Linux-реализация; имена vendor/product разрешаются через системную базу `usb.ids`, если она доступна. |
 
 ## Текущий Daemon API
 
@@ -211,10 +211,9 @@ usage: usbip unbind <args>
 
 - `attach` сейчас поддерживает основной remote import path через `vhci_hcd`;
   `--device` принимается как legacy-compatible alias для import id.
-- `list -r` и `list -l` выводят devices, но имена vendor/product пока
-  являются placeholder-текстом до добавления USB ID database.
-- `port` выводит imported devices, но имена vendor/product пока являются
-  placeholder-текстом до добавления USB ID database.
+- `list -r`, `list -l` и `port` используют первую доступную системную базу
+  USB ID из стандартных Linux-путей; отсутствующие записи выводятся как
+  `unknown vendor` или `unknown product`.
 - `bind` и `unbind` работают только с локальным sysfs, как legacy
   server-side workflow; QUIC transport они не используют.
 - `list -d` сейчас возвращает пустой вывод; полноценный `usbip-vudc` gadget

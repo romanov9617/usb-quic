@@ -277,7 +277,7 @@ func runPort(cmd *cobra.Command, runtime Runtime) error {
 		return fmt.Errorf("list imported devices: %w", err)
 	}
 
-	writePortOutput(cmd, devices)
+	writePortOutput(cmd, devices, runtime.LookupUSBID)
 
 	return nil
 }
@@ -292,7 +292,7 @@ func runListLocal(cmd *cobra.Command, runtime Runtime, opts listOptions) error {
 		return fmt.Errorf("list local devices: %w", err)
 	}
 
-	writeListDevicesOutput(cmd, devices, opts.parsable)
+	writeListDevicesOutput(cmd, devices, opts.parsable, runtime.LookupUSBID)
 
 	return nil
 }
@@ -312,12 +312,17 @@ func runListRemote(cmd *cobra.Command, runtime Runtime, rootOpts *rootOptions, o
 		return nil
 	}
 
-	writeListRemoteOutput(cmd, opts.remote, devices)
+	writeListRemoteOutput(cmd, opts.remote, devices, runtime.LookupUSBID)
 
 	return nil
 }
 
-func writeListDevicesOutput(cmd *cobra.Command, devices []adapterusbip.Device, parsable bool) {
+func writeListDevicesOutput(
+	cmd *cobra.Command,
+	devices []adapterusbip.Device,
+	parsable bool,
+	lookupUSBID LookupUSBIDFunc,
+) {
 	if parsable {
 		writeParsableDevices(cmd, devices)
 
@@ -325,6 +330,7 @@ func writeListDevicesOutput(cmd *cobra.Command, devices []adapterusbip.Device, p
 	}
 
 	for _, device := range devices {
+		vendorName, productName := deviceNames(lookupUSBID, device.IDVendor, device.IDProduct)
 		_, _ = fmt.Fprintf(
 			cmd.OutOrStdout(),
 			" - busid %s (%04x:%04x)\n",
@@ -334,7 +340,9 @@ func writeListDevicesOutput(cmd *cobra.Command, devices []adapterusbip.Device, p
 		)
 		_, _ = fmt.Fprintf(
 			cmd.OutOrStdout(),
-			"   unknown vendor : unknown product (%04x:%04x)\n\n",
+			"   %s : %s (%04x:%04x)\n\n",
+			vendorName,
+			productName,
 			device.IDVendor,
 			device.IDProduct,
 		)
@@ -353,7 +361,12 @@ func writeParsableDevices(cmd *cobra.Command, devices []adapterusbip.Device) {
 	}
 }
 
-func writeListRemoteOutput(cmd *cobra.Command, remote string, devices []adapterusbip.Device) {
+func writeListRemoteOutput(
+	cmd *cobra.Command,
+	remote string,
+	devices []adapterusbip.Device,
+	lookupUSBID LookupUSBIDFunc,
+) {
 	if len(devices) == 0 {
 		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "usbip: info: no exportable devices found on %s\n", remote)
 
@@ -365,15 +378,18 @@ func writeListRemoteOutput(cmd *cobra.Command, remote string, devices []adapteru
 	_, _ = fmt.Fprintf(cmd.OutOrStdout(), " - %s\n", remote)
 
 	for _, device := range devices {
-		writeDevice(cmd, device)
+		writeDevice(cmd, device, lookupUSBID)
 	}
 }
 
-func writeDevice(cmd *cobra.Command, device adapterusbip.Device) {
+func writeDevice(cmd *cobra.Command, device adapterusbip.Device, lookupUSBID LookupUSBIDFunc) {
+	vendorName, productName := deviceNames(lookupUSBID, device.IDVendor, device.IDProduct)
 	_, _ = fmt.Fprintf(
 		cmd.OutOrStdout(),
-		"        %s: unknown vendor : unknown product (%04x:%04x)\n",
+		"        %s: %s : %s (%04x:%04x)\n",
 		device.BusID,
+		vendorName,
+		productName,
 		device.IDVendor,
 		device.IDProduct,
 	)
@@ -400,11 +416,12 @@ func writeDevice(cmd *cobra.Command, device adapterusbip.Device) {
 	}
 }
 
-func writePortOutput(cmd *cobra.Command, devices []vhci.ImportedDevice) {
+func writePortOutput(cmd *cobra.Command, devices []vhci.ImportedDevice, lookupUSBID LookupUSBIDFunc) {
 	_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Imported USB devices")
 	_, _ = fmt.Fprintln(cmd.OutOrStdout(), "====================")
 
 	for _, device := range devices {
+		vendorName, productName := deviceNames(lookupUSBID, device.IDVendor, device.IDProduct)
 		_, _ = fmt.Fprintf(
 			cmd.OutOrStdout(),
 			"Port %02d: <%s> at %s\n",
@@ -414,7 +431,9 @@ func writePortOutput(cmd *cobra.Command, devices []vhci.ImportedDevice) {
 		)
 		_, _ = fmt.Fprintf(
 			cmd.OutOrStdout(),
-			"       unknown vendor : unknown product (%04x:%04x)\n",
+			"       %s : %s (%04x:%04x)\n",
+			vendorName,
+			productName,
 			device.IDVendor,
 			device.IDProduct,
 		)
@@ -444,6 +463,19 @@ func writePortOutput(cmd *cobra.Command, devices []vhci.ImportedDevice) {
 			device.RemoteDev,
 		)
 	}
+}
+
+func deviceNames(lookupUSBID LookupUSBIDFunc, idVendor, idProduct uint16) (string, string) {
+	vendorName, productName := lookupUSBID(idVendor, idProduct)
+	if vendorName == "" {
+		vendorName = "unknown vendor"
+	}
+
+	if productName == "" {
+		productName = "unknown product"
+	}
+
+	return vendorName, productName
 }
 
 func portStatusDescription(status int) string {
