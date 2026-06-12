@@ -37,6 +37,7 @@ type Runtime struct {
 	BindLocal    BindLocalFunc
 	DetachRemote DetachRemoteFunc
 	ListImported ListImportedFunc
+	ListLocal    ListLocalFunc
 	ListRemote   ListRemoteFunc
 	UnbindLocal  UnbindLocalFunc
 }
@@ -53,6 +54,9 @@ type DetachRemoteFunc func(ctx context.Context, port int) error
 // ListImportedFunc lists USB/IP devices imported into local vhci_hcd.
 type ListImportedFunc func(ctx context.Context) ([]vhci.ImportedDevice, error)
 
+// ListLocalFunc lists local USB devices.
+type ListLocalFunc func(ctx context.Context) ([]adapterusbip.Device, error)
+
 // ListRemoteFunc lists devices exported by a remote USB/IP endpoint.
 type ListRemoteFunc func(ctx context.Context, endpoint adapterusbip.Endpoint) ([]adapterusbip.Device, error)
 
@@ -67,6 +71,7 @@ func NewRootCommand(stdin io.Reader, stdout, stderr io.Writer) *cobra.Command {
 		BindLocal:    bindLocal,
 		DetachRemote: detachRemote,
 		ListImported: listImported,
+		ListLocal:    listLocal,
 		ListRemote:   adapterusbip.ListExportedDevices,
 		UnbindLocal:  unbindLocal,
 	}
@@ -139,6 +144,10 @@ func (runtime Runtime) withDefaults() Runtime {
 		runtime.ListImported = listImported
 	}
 
+	if runtime.ListLocal == nil {
+		runtime.ListLocal = listLocal
+	}
+
 	if runtime.ListRemote == nil {
 		runtime.ListRemote = adapterusbip.ListExportedDevices
 	}
@@ -186,4 +195,13 @@ func unbindLocal(_ context.Context, busid string) error {
 	}
 
 	return nil
+}
+
+func listLocal(ctx context.Context) ([]adapterusbip.Device, error) {
+	devices, err := adapterusbip.LocalDeviceLister{SysfsRoot: ""}.ListLocalDevices(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("list local USB devices: %w", err)
+	}
+
+	return devices, nil
 }
