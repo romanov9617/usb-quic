@@ -1,4 +1,4 @@
-// Package daemon contains the usbipd-like service command-line presentation layer.
+// Package daemon contains the usb-quic proxy service command-line presentation layer.
 package daemon
 
 import (
@@ -13,11 +13,11 @@ import (
 	"usb-quic/internal/config"
 )
 
-const appName = "usbipd"
+const appName = "usb-quicd"
 
 const (
 	defaultQUICAddress   = "127.0.0.1:4242"
-	defaultTransportMode = "tcp"
+	defaultTransportMode = ""
 	defaultUpstream      = "127.0.0.1:3240"
 )
 
@@ -34,6 +34,7 @@ type rootOptions struct {
 	pidFile        string
 	quicAddr       string
 	quicListen     string
+	tcpListen      string
 	tcpPort        int
 	transportMode  string
 	upstream       string
@@ -49,7 +50,7 @@ type Runtime struct {
 	Run      RunFunc
 }
 
-// NewRootCommand builds a usbipd-like daemon command.
+// NewRootCommand builds the usb-quicd service command.
 func NewRootCommand(stdin io.Reader, stdout, stderr io.Writer) *cobra.Command {
 	runtime := Runtime{
 		LogLevel: nil,
@@ -71,6 +72,7 @@ func NewRootCommandWithRuntime(stdin io.Reader, stdout, stderr io.Writer, runtim
 		pidFile:        "",
 		quicAddr:       defaultQUICAddress,
 		quicListen:     defaultQUICAddress,
+		tcpListen:      "",
 		tcpPort:        adapterusbip.DefaultPort,
 		transportMode:  defaultTransportMode,
 		upstream:       defaultUpstream,
@@ -89,7 +91,7 @@ func NewRootCommandWithRuntime(stdin io.Reader, stdout, stderr io.Writer, runtim
 		},
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if opts.version {
-				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "%s (usb-quic %s)\n", appName, version)
+				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "%s %s\n", appName, version)
 
 				return nil
 			}
@@ -117,73 +119,56 @@ func registerFlags(cmd *cobra.Command, opts *rootOptions) {
 	cmd.Flags().BoolVarP(&opts.debug, "debug", "d", false, "print debugging information")
 	cmd.Flags().StringVarP(&opts.pidFile, "pid", "P", "", "write process id to file")
 	cmd.Flags().IntVarP(&opts.tcpPort, "tcp-port", "t", adapterusbip.DefaultPort, "listen on TCP/IP port")
+	cmd.Flags().StringVar(
+		&opts.tcpListen,
+		"tcp-listen",
+		opts.tcpListen,
+		"TCP listen address for tcp and quic-client modes",
+	)
 	cmd.Flags().BoolVarP(&opts.version, "version", "v", false, "show version")
 	cmd.Flags().StringVar(
 		&opts.transportMode,
-		"usb-quic-transport",
+		"transport",
 		opts.transportMode,
-		"usb-quic transport mode: tcp, quic-client, or quic-server",
+		"transport mode: tcp, quic-client, or quic-server (required)",
 	)
 	cmd.Flags().StringVar(
 		&opts.quicListen,
-		"usb-quic-quic-listen",
+		"quic-listen",
 		opts.quicListen,
-		"usb-quic QUIC listen address for quic-server mode",
+		"QUIC listen address for quic-server mode",
 	)
 	cmd.Flags().StringVar(
 		&opts.quicAddr,
-		"usb-quic-quic-addr",
+		"quic-server",
 		opts.quicAddr,
-		"usb-quic QUIC server address for quic-client mode",
+		"QUIC server address for quic-client mode",
 	)
 	cmd.Flags().StringVar(
 		&opts.upstream,
-		"usb-quic-upstream",
+		"upstream",
 		opts.upstream,
-		"usb-quic TCP upstream address for quic-server mode",
+		"TCP upstream address for tcp and quic-server modes",
 	)
 	cmd.Flags().BoolVar(
 		&opts.devInsecureTLS,
-		"usb-quic-dev-insecure-tls",
+		"insecure-dev-tls",
 		opts.devInsecureTLS,
-		"use dev-only self-signed/insecure TLS for local transport smoke tests",
+		"use ephemeral self-signed/insecure TLS; development only",
 	)
-	hideUSBQUICFlags(cmd)
 }
 
 func rootHelpTemplate() string {
-	return `usage: usbipd [options]
+	return `usage: usb-quicd [options]
 
-	-4, --ipv4
-		Bind to IPv4. Default is both.
-
-	-6, --ipv6
-		Bind to IPv6. Default is both.
-
-	-e, --device
-		Run in device mode.
-		Rather than drive an attached device, create
-		a virtual UDC to bind gadgets to.
-
-	-D, --daemon
-		Run as a daemon process.
-
-	-d, --debug
-		Print debugging information.
-
-	-PFILE, --pid FILE
-		Write process id to FILE.
-		If no FILE specified, use /var/run/usbipd.pid
-
-	-tPORT, --tcp-port PORT
-		Listen on TCP/IP port PORT.
-
-	-h, --help
-		Print this help.
-
-	-v, --version
-		Show version.
-
+  --transport MODE       Required: tcp, quic-client, or quic-server
+  --tcp-listen ADDRESS   TCP listen address for tcp and quic-client modes
+  --quic-server ADDRESS  QUIC server address for quic-client mode
+  --quic-listen ADDRESS  QUIC listen address for quic-server mode
+  --upstream ADDRESS     TCP upstream address for tcp and quic-server modes
+  --insecure-dev-tls     Use development-only insecure TLS
+  -d, --debug            Enable debug logging
+  -v, --version          Show version
 `
 }
 
@@ -219,23 +204,9 @@ func configFromOptions(opts rootOptions) config.Daemon {
 		PIDFile:        opts.pidFile,
 		QUICAddr:       opts.quicAddr,
 		QUICListen:     opts.quicListen,
+		TCPListen:      opts.tcpListen,
 		TCPPort:        opts.tcpPort,
 		TransportMode:  opts.transportMode,
 		Upstream:       opts.upstream,
-	}
-}
-
-func hideUSBQUICFlags(cmd *cobra.Command) {
-	for _, name := range []string{
-		"usb-quic-transport",
-		"usb-quic-quic-listen",
-		"usb-quic-quic-addr",
-		"usb-quic-upstream",
-		"usb-quic-dev-insecure-tls",
-	} {
-		err := cmd.Flags().MarkHidden(name)
-		if err != nil {
-			panic(err)
-		}
 	}
 }

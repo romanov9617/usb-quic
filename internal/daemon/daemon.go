@@ -42,7 +42,7 @@ func New(cfg config.Daemon, logger *logging.Logger, opts ...Option) *Daemon {
 		cfg:          cfg,
 		log:          newLogger(logger),
 		listen:       listen,
-		streamOpener: transport.NewTCPStreamOpener(defaultUpstreamAddress()),
+		streamOpener: transport.NewTCPStreamOpener(upstreamAddress(cfg)),
 	}
 
 	if options.listener != nil {
@@ -114,7 +114,19 @@ func defaultUpstreamAddress() string {
 	return net.JoinHostPort("127.0.0.1", strconv.Itoa(adapterusbip.DefaultPort))
 }
 
+func upstreamAddress(cfg config.Daemon) string {
+	if cfg.Upstream != "" {
+		return cfg.Upstream
+	}
+
+	return defaultUpstreamAddress()
+}
+
 func listenAddress(cfg config.Daemon) string {
+	if cfg.TCPListen != "" {
+		return cfg.TCPListen
+	}
+
 	host := ""
 	if cfg.BindIPv4 && !cfg.BindIPv6 {
 		host = "0.0.0.0"

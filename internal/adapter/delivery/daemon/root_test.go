@@ -11,7 +11,7 @@ import (
 
 const testPIDFile = "/tmp/usbipd.pid"
 
-func TestRootHelpMatchesUSBIPDShape(t *testing.T) {
+func TestRootHelpMatchesProductShape(t *testing.T) {
 	t.Parallel()
 
 	var stdout bytes.Buffer
@@ -24,38 +24,16 @@ func TestRootHelpMatchesUSBIPDShape(t *testing.T) {
 		t.Fatalf("execute help: %v", err)
 	}
 
-	want := `usage: usbipd [options]
+	want := `usage: usb-quicd [options]
 
-	-4, --ipv4
-		Bind to IPv4. Default is both.
-
-	-6, --ipv6
-		Bind to IPv6. Default is both.
-
-	-e, --device
-		Run in device mode.
-		Rather than drive an attached device, create
-		a virtual UDC to bind gadgets to.
-
-	-D, --daemon
-		Run as a daemon process.
-
-	-d, --debug
-		Print debugging information.
-
-	-PFILE, --pid FILE
-		Write process id to FILE.
-		If no FILE specified, use /var/run/usbipd.pid
-
-	-tPORT, --tcp-port PORT
-		Listen on TCP/IP port PORT.
-
-	-h, --help
-		Print this help.
-
-	-v, --version
-		Show version.
-
+  --transport MODE       Required: tcp, quic-client, or quic-server
+  --tcp-listen ADDRESS   TCP listen address for tcp and quic-client modes
+  --quic-server ADDRESS  QUIC server address for quic-client mode
+  --quic-listen ADDRESS  QUIC listen address for quic-server mode
+  --upstream ADDRESS     TCP upstream address for tcp and quic-server modes
+  --insecure-dev-tls     Use development-only insecure TLS
+  -d, --debug            Enable debug logging
+  -v, --version          Show version
 `
 
 	if got := stdout.String(); got != want {
@@ -63,7 +41,7 @@ func TestRootHelpMatchesUSBIPDShape(t *testing.T) {
 	}
 }
 
-func TestUSBIPDCompatibleFlagsParse(t *testing.T) {
+func TestLegacyDaemonFlagsParse(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -109,7 +87,7 @@ func TestVersionCommand(t *testing.T) {
 		t.Fatalf("execute version: %v", err)
 	}
 
-	if got := stdout.String(); got != "usbipd (usb-quic "+version+")\n" {
+	if got := stdout.String(); got != "usb-quicd "+version+"\n" {
 		t.Fatalf("unexpected version output: %q", got)
 	}
 }
@@ -129,6 +107,7 @@ func TestRunPassesConfigToService(t *testing.T) {
 			PIDFile:        "",
 			QUICAddr:       "",
 			QUICListen:     "",
+			TCPListen:      "",
 			TCPPort:        0,
 			TransportMode:  "",
 			Upstream:       "",
@@ -162,6 +141,7 @@ func TestRunPassesConfigToService(t *testing.T) {
 		PIDFile:        testPIDFile,
 		QUICAddr:       defaultQUICAddress,
 		QUICListen:     defaultQUICAddress,
+		TCPListen:      "",
 		TCPPort:        3241,
 		TransportMode:  defaultTransportMode,
 		Upstream:       defaultUpstream,
@@ -171,7 +151,7 @@ func TestRunPassesConfigToService(t *testing.T) {
 	}
 }
 
-func TestRunPassesHiddenUSBQUICConfigToService(t *testing.T) {
+func TestRunPassesUSBQUICConfigToService(t *testing.T) {
 	t.Parallel()
 
 	runner := &recordingRunner{
@@ -186,6 +166,7 @@ func TestRunPassesHiddenUSBQUICConfigToService(t *testing.T) {
 			PIDFile:        "",
 			QUICAddr:       "",
 			QUICListen:     "",
+			TCPListen:      "",
 			TCPPort:        0,
 			TransportMode:  "",
 			Upstream:       "",
@@ -199,11 +180,12 @@ func TestRunPassesHiddenUSBQUICConfigToService(t *testing.T) {
 
 	cmd := NewRootCommandWithRuntime(nil, bytes.NewBuffer(nil), bytes.NewBuffer(nil), runtime)
 	cmd.SetArgs([]string{
-		"--usb-quic-transport", "quic-client",
-		"--usb-quic-quic-addr", "127.0.0.1:14242",
-		"--usb-quic-quic-listen", "127.0.0.1:24242",
-		"--usb-quic-upstream", "127.0.0.1:19000",
-		"--usb-quic-dev-insecure-tls",
+		"--transport", "quic-client",
+		"--quic-server", "127.0.0.1:14242",
+		"--quic-listen", "127.0.0.1:24242",
+		"--tcp-listen", "127.0.0.1:13240",
+		"--upstream", "127.0.0.1:19000",
+		"--insecure-dev-tls",
 	})
 
 	err := cmd.Execute()
@@ -221,6 +203,7 @@ func TestRunPassesHiddenUSBQUICConfigToService(t *testing.T) {
 		PIDFile:        "",
 		QUICAddr:       "127.0.0.1:14242",
 		QUICListen:     "127.0.0.1:24242",
+		TCPListen:      "127.0.0.1:13240",
 		TCPPort:        3240,
 		TransportMode:  "quic-client",
 		Upstream:       "127.0.0.1:19000",
@@ -245,6 +228,7 @@ func TestVersionDoesNotCallService(t *testing.T) {
 			PIDFile:        "",
 			QUICAddr:       "",
 			QUICListen:     "",
+			TCPListen:      "",
 			TCPPort:        0,
 			TransportMode:  "",
 			Upstream:       "",

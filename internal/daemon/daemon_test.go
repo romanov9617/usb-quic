@@ -43,6 +43,7 @@ func TestRunCreatesAndRemovesPIDFile(t *testing.T) {
 			PIDFile:        pidFile,
 			QUICAddr:       "",
 			QUICListen:     "",
+			TCPListen:      "",
 			TCPPort:        testTCPPort,
 			TransportMode:  "",
 			Upstream:       "",
@@ -86,6 +87,7 @@ func TestRunReturnsPIDFileWriteError(t *testing.T) {
 		PIDFile:        filepath.Join(t.TempDir(), "missing", "usbipd.pid"),
 		QUICAddr:       "",
 		QUICListen:     "",
+		TCPListen:      "",
 		TCPPort:        testTCPPort,
 		TransportMode:  "",
 		Upstream:       "",
@@ -114,6 +116,7 @@ func TestRunReturnsListenError(t *testing.T) {
 		PIDFile:        "",
 		QUICAddr:       "",
 		QUICListen:     "",
+		TCPListen:      "",
 		TCPPort:        -1,
 		TransportMode:  "",
 		Upstream:       "",
@@ -146,6 +149,7 @@ func TestRunClosesListenerOnCancel(t *testing.T) {
 			PIDFile:        "",
 			QUICAddr:       "",
 			QUICListen:     "",
+			TCPListen:      "",
 			TCPPort:        testTCPPort,
 			TransportMode:  "",
 			Upstream:       "",
@@ -186,6 +190,7 @@ func TestRunWaitsForActiveConnectionHandlers(t *testing.T) {
 		PIDFile:        "",
 		QUICAddr:       "",
 		QUICListen:     "",
+		TCPListen:      "",
 		TCPPort:        testTCPPort,
 		TransportMode:  "",
 		Upstream:       "",
@@ -220,6 +225,11 @@ func TestListenAddress(t *testing.T) {
 		want string
 	}{
 		{
+			name: "explicit address",
+			cfg:  daemonConfig("127.0.0.1:13240", ""),
+			want: "127.0.0.1:13240",
+		},
+		{
 			name: "dual stack default",
 			cfg: config.Daemon{
 				BindIPv4:       false,
@@ -231,6 +241,7 @@ func TestListenAddress(t *testing.T) {
 				PIDFile:        "",
 				QUICAddr:       "",
 				QUICListen:     "",
+				TCPListen:      "",
 				TCPPort:        testTCPPort,
 				TransportMode:  "",
 				Upstream:       "",
@@ -249,6 +260,7 @@ func TestListenAddress(t *testing.T) {
 				PIDFile:        "",
 				QUICAddr:       "",
 				QUICListen:     "",
+				TCPListen:      "",
 				TCPPort:        testTCPPort,
 				TransportMode:  "",
 				Upstream:       "",
@@ -267,6 +279,7 @@ func TestListenAddress(t *testing.T) {
 				PIDFile:        "",
 				QUICAddr:       "",
 				QUICListen:     "",
+				TCPListen:      "",
 				TCPPort:        testTCPPort,
 				TransportMode:  "",
 				Upstream:       "",
@@ -284,6 +297,36 @@ func TestListenAddress(t *testing.T) {
 				t.Fatalf("listenAddress=%q, want=%q", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestUpstreamAddress(t *testing.T) {
+	t.Parallel()
+
+	if got := upstreamAddress(daemonConfig("", "127.0.0.1:19000")); got != "127.0.0.1:19000" {
+		t.Fatalf("upstreamAddress=%q, want explicit upstream", got)
+	}
+
+	if got := upstreamAddress(daemonConfig("", "")); got != defaultUpstreamAddress() {
+		t.Fatalf("upstreamAddress=%q, want default %q", got, defaultUpstreamAddress())
+	}
+}
+
+func daemonConfig(tcpListen, upstream string) config.Daemon {
+	return config.Daemon{
+		BindIPv4:       false,
+		BindIPv6:       false,
+		DeviceMode:     false,
+		Daemonize:      false,
+		Debug:          false,
+		DevInsecureTLS: false,
+		PIDFile:        "",
+		QUICAddr:       "",
+		QUICListen:     "",
+		TCPListen:      tcpListen,
+		TCPPort:        0,
+		TransportMode:  "",
+		Upstream:       upstream,
 	}
 }
 
